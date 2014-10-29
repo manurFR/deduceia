@@ -1,5 +1,6 @@
 from random import shuffle
 from Deck import prepare_deck
+from Interactive import ask_for
 
 
 def prepare_game_deck(nb_decks):
@@ -11,6 +12,10 @@ def prepare_game_deck(nb_decks):
 
 
 if __name__ == '__main__':
+    print 'Welcome to Deduce or Die! IA'
+    print
+    nb_players = ask_for('Number of players : ', ['3', '4', '5', '6'])
+
     motive_deck = prepare_game_deck(nb_decks=1)
     interrogation_deck = prepare_game_deck(nb_decks=2)
 
