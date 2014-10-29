@@ -22,14 +22,14 @@ class TestDeck(unittest.TestCase):
 
     def test_deal_deck(self):
         players = [HumanPlayer('test'), AIPlayer(1)]
-        deck = ['card1', 'card2', 'card3', 'card4', 'card5']
+        deck = [(1, 'L'), (2, 'L'), (3, 'L'), (4, 'L'), (5, 'L')]
 
         deal_deck(deck, players)
 
-        self.assertEqual(['card1', 'card3'], players[0].hand)
-        self.assertEqual(['card2', 'card4'], players[1].hand)
+        self.assertEqual([(1, 'L'), (3, 'L')], players[0].hand)
+        self.assertEqual([(2, 'L'), (4, 'L')], players[1].hand)
 
-        self.assertEqual(['card5'], deck)
+        self.assertEqual([(5, 'L')], deck)
 
     def test_calculate_rounds_no_remaining_cards(self):
         players = ['p1', 'p2', 'p3']

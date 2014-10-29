@@ -28,6 +28,29 @@ def print_summary():
     print "Your hand: {0}".format(format_hand(human_player.hand))
     if extra_card:
         print "Extra card: {0}".format(format_card(extra_card))
+    if human_player.low_suit:
+        print_low_suit()
+
+
+def determine_low_suit():
+    for player in players:
+        lowest_suits = player.lowest_suits()
+        if len(lowest_suits) == 1:
+            player.set_low_suit(lowest_suits[0])
+        elif player.is_human():
+            str_choices = ' or '.join(lowest_suits)
+            low_suit = ask_for('Which low suit do you want to reveal ({0}) ? '.format(str_choices), str, lowest_suits)
+            player.set_low_suit(low_suit)
+        else:
+            player.choose_low_suit(lowest_suits)
+
+
+def print_low_suit():
+    str_low_suit = ''
+    for player in players:
+        str_low_suit += '[{0}: {1}] '.format(player.name, player.low_suit)
+    print 'Low Suits: ' + str_low_suit
+
 
 
 if __name__ == '__main__':
@@ -54,5 +77,7 @@ if __name__ == '__main__':
         extra_card = None
 
     print_summary()
-    # TODO sort hand
+
+    determine_low_suit()
+    print_low_suit()
 
