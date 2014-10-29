@@ -1,5 +1,7 @@
 import unittest
-from Deck import prepare_deck, resolve_murder_card
+from AIPlayer import AIPlayer
+from Deck import prepare_deck, resolve_murder_card, deal_deck, calculate_rounds
+from HumanPlayer import HumanPlayer
 
 
 class MyTestCase(unittest.TestCase):
@@ -18,6 +20,27 @@ class MyTestCase(unittest.TestCase):
     def test_resolve_murder_card_determine_suit(self):
         self.assertEqual('$', resolve_murder_card((1, '$'), (7, '$'))[1])
         self.assertEqual('$', resolve_murder_card((8, 'L'), (9, 'H'))[1])
+
+    def test_deal_deck(self):
+        players = [HumanPlayer('test'), AIPlayer(1)]
+        deck = ['card1', 'card2', 'card3', 'card4', 'card5']
+
+        deal_deck(deck, players)
+
+        self.assertEqual(['card1', 'card3'], players[0].hand)
+        self.assertEqual(['card2', 'card4'], players[1].hand)
+
+        self.assertEqual(['card5'], deck)
+
+    def test_calculate_rounds_no_remaining_cards(self):
+        players = ['p1', 'p2', 'p3']
+        deck = ['card1', 'card2', 'card3'] * 2
+        self.assertEqual(2, calculate_rounds(deck, players))
+
+    def test_calculate_rounds_one_remaining_card(self):
+        players = ['p1', 'p2', 'p3']
+        deck = ['card1', 'card2', 'card3', 'card4']
+        self.assertEqual(1, calculate_rounds(deck, players))
 
 if __name__ == '__main__':
     unittest.main()

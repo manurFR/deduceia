@@ -17,3 +17,13 @@ def resolve_murder_card(evidence1, evidence2):
         suit = remaining_suit[0]
     return rank, suit
 
+
+def calculate_rounds(deck, players):
+    return len(deck) / len(players)
+
+
+def deal_deck(deck, players):
+    nb_rounds = calculate_rounds(deck, players)
+    for _ in range(nb_rounds):
+        for player in players:
+            player.deal_card(deck.pop(0))
