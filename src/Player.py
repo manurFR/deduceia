@@ -7,6 +7,7 @@ class Player(object):
     def __init__(self):
         self._hand = []
         self._low_suit = None
+        self._secret = 1
 
     def deal_card(self, card):
         self._hand.append(card)
@@ -43,6 +44,10 @@ class Player(object):
     @property
     def low_suit(self):
         return self._low_suit
+
+    @property
+    def secret(self):
+        return self._secret
 
 
 class HumanPlayer(Player):

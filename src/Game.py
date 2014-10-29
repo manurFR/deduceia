@@ -30,6 +30,7 @@ def print_summary():
         print "Extra card: {0}".format(format_card(extra_card))
     if human_player.low_suit:
         print_low_suit()
+    print_secret()
 
 
 def determine_low_suit():
@@ -50,6 +51,13 @@ def print_low_suit():
     for player in players:
         str_low_suit += '[{0}: {1}] '.format(player.name, player.low_suit)
     print 'Low Suits: ' + str_low_suit
+
+
+def print_secret():
+    str_secret = ''
+    for player in players:
+        str_secret += '[{0}: {1}] '.format(player.name, player.secret)
+    print 'Secret to play: ' + str_secret
 
 
 
@@ -79,5 +87,6 @@ if __name__ == '__main__':
     print_summary()
 
     determine_low_suit()
+    print
     print_low_suit()
 
