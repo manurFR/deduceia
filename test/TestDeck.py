@@ -3,7 +3,7 @@ from Deck import prepare_deck, resolve_murder_card, deal_deck, calculate_rounds,
 from Player import HumanPlayer, AIPlayer
 
 
-class MyTestCase(unittest.TestCase):
+class TestDeck(unittest.TestCase):
     def test_prepare_deck(self):
         deck = prepare_deck()
         self.assertEqual(3*9, len(deck))

@@ -4,7 +4,7 @@ from Game import prepare_game_deck, prepare_players
 from Player import HumanPlayer
 
 
-class MyTestCase(unittest.TestCase):
+class TestGame(unittest.TestCase):
     def test_prepare_game_deck(self):
         self.assertEqual(3 * 9 * 3, len(prepare_game_deck(3)))
 

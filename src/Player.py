@@ -1,3 +1,6 @@
+from Deck import hand_sorter
+
+
 class Player(object):
 
     def __init__(self):
@@ -5,6 +8,7 @@ class Player(object):
 
     def deal_card(self, card):
         self._hand.append(card)
+        self._hand.sort(key=hand_sorter)
 
     @property
     def name(self):

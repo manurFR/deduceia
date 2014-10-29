@@ -35,3 +35,7 @@ def format_card(card):
 
 def format_hand(cards):
     return ' '.join(format_card(card) for card in cards)
+
+
+def hand_sorter(card):
+    return 10 * SUITS.index(card[1]) + card[0]
