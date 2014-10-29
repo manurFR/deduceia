@@ -1,7 +1,6 @@
 import unittest
-from AIPlayer import AIPlayer
-from Deck import prepare_deck, resolve_murder_card, deal_deck, calculate_rounds
-from HumanPlayer import HumanPlayer
+from Deck import prepare_deck, resolve_murder_card, deal_deck, calculate_rounds, format_card, format_hand
+from Player import HumanPlayer, AIPlayer
 
 
 class MyTestCase(unittest.TestCase):
@@ -41,6 +40,12 @@ class MyTestCase(unittest.TestCase):
         players = ['p1', 'p2', 'p3']
         deck = ['card1', 'card2', 'card3', 'card4']
         self.assertEqual(1, calculate_rounds(deck, players))
+
+    def test_format_card(self):
+        self.assertEqual('3H', format_card((3, 'H')))
+
+    def test_format_hand(self):
+        self.assertEqual('3H 8$ 4L', format_hand([(3, 'H'), (8, '$'), (4, 'L')]))
 
 if __name__ == '__main__':
     unittest.main()

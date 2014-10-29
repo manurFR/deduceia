@@ -27,3 +27,11 @@ def deal_deck(deck, players):
     for _ in range(nb_rounds):
         for player in players:
             player.deal_card(deck.pop(0))
+
+
+def format_card(card):
+    return str(card[0]) + card[1]
+
+
+def format_hand(cards):
+    return ' '.join(format_card(card) for card in cards)
