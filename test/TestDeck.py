@@ -1,5 +1,6 @@
 import unittest
-from Deck import prepare_deck, resolve_murder_card, deal_deck, calculate_rounds, format_card, format_hand
+from Deck import prepare_deck, resolve_murder_card, deal_deck, calculate_rounds, format_card, format_hand, \
+    draw_question_cards
 from Player import HumanPlayer, AIPlayer
 
 
@@ -46,6 +47,23 @@ class TestDeck(unittest.TestCase):
 
     def test_format_hand(self):
         self.assertEqual('3H 8$ 4L', format_hand([(3, 'H'), (8, '$'), (4, 'L')]))
+
+    def test_draw_question_cards(self):
+        interrogation_deck = ['card1', 'card2', 'card3', 'card4']
+
+        self.assertItemsEqual(['card2', 'card3', 'card4'], draw_question_cards(interrogation_deck, []))
+        self.assertEqual(['card1'], interrogation_deck)
+
+    def test_draw_question_cards_when_there_are_not_enough_cards_in_the_interrogation_deck(self):
+        interrogation_deck = ['card1']
+        discard_deck = ['card2', 'card3', 'card4']
+
+        drawn_cards = draw_question_cards(interrogation_deck, discard_deck)
+        self.assertEqual(3, len(drawn_cards))
+        self.assertIn('card1', drawn_cards)
+        self.assertEqual(0, len(discard_deck))
+        self.assertEqual(1, len(interrogation_deck))
+
 
 if __name__ == '__main__':
     unittest.main()

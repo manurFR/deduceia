@@ -1,5 +1,8 @@
+from random import shuffle
+
 RANKS = range(1, 10)
 SUITS = ['L', 'H', '$']
+NB_QUESTION_CARDS = 3
 
 
 def prepare_deck():
@@ -39,3 +42,17 @@ def format_hand(cards):
 
 def hand_sorter(card):
     return 10 * SUITS.index(card[1]) + card[0]
+
+
+def draw_question_cards(interrogation_deck, discard_deck):
+    question_cards = []
+
+    if len(interrogation_deck) < NB_QUESTION_CARDS:
+        question_cards.extend(interrogation_deck)
+        interrogation_deck = list(discard_deck)  # clone !
+        del discard_deck[:]                      # clear deck by reference !
+        shuffle(interrogation_deck)
+
+    for _ in range(len(question_cards), NB_QUESTION_CARDS):
+        question_cards.append(interrogation_deck.pop())
+    return question_cards

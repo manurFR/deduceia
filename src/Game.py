@@ -1,6 +1,6 @@
 from random import shuffle
 
-from Deck import prepare_deck, deal_deck, format_hand, format_card
+from Deck import prepare_deck, deal_deck, format_hand, format_card, draw_question_cards
 from Player import HumanPlayer, AIPlayer
 from Interactive import ask_for
 
@@ -60,6 +60,21 @@ def print_secret():
     print 'Secret to play: ' + str_secret
 
 
+def play_turn(turn_number):
+    id_current_player = turn_number % len(players)
+    current_player = players[id_current_player]
+    other_players = []
+    for i in range(1, len(players)):
+        other_players.append(players[(id_current_player + i) % len(players)])
+
+    question_cards = draw_question_cards(interrogation_deck, discard_deck)
+    print
+    print 'Turn {0}'.format(turn_number)
+    print 'Question cards: {0}'.format(format_hand(question_cards))
+    current_player.play_turn(question_cards, other_players)
+
+
+
 if __name__ == '__main__':
     print 'Welcome to Deduce or Die! IA'
     print
@@ -70,6 +85,7 @@ if __name__ == '__main__':
 
     motive_deck = prepare_game_deck(nb_decks=1)
     interrogation_deck = prepare_game_deck(nb_decks=2)
+    discard_deck = []
 
     evidence1 = motive_deck.pop()
     evidence2 = motive_deck.pop()
@@ -89,3 +105,9 @@ if __name__ == '__main__':
     print
     print_low_suit()
 
+    turn = 1
+    while True:
+        play_turn(turn)
+        turn += 1
+        if turn == 5:
+            break
