@@ -1,15 +1,15 @@
 from random import choice
 from Deck import hand_sorter, SUITS
-from Interactive import ask_for, help_command
+from Interactive import ask_for, help_command, quit_command
 
-COMMANDS = {'h': help_command,  # help
+COMMANDS = {'h': help_command,
             'r': None,  # summary
             't': None,  # history
             'i': None,  # interrogate
             's': None,  # secret
             'a': None,  # accuse
-            'q': None,  # quit
-           }
+            'q': quit_command,
+}
 
 class Player(object):
 
@@ -70,7 +70,8 @@ class HumanPlayer(Player):
         while not turn_ended:
             command = ask_for('Your choice (h for help): ', str, COMMANDS.keys())
             if COMMANDS[command] is not None:
-                turn_ended = COMMANDS[command]()
+                turn_ended = COMMANDS[command](question_cards, other_players)
+                print
 
     # noinspection PyMethodMayBeStatic
     def is_human(self):

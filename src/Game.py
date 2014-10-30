@@ -69,7 +69,7 @@ def play_turn(turn_number):
 
     question_cards = draw_question_cards(interrogation_deck, discard_deck)
     print
-    print 'Turn {0}'.format(turn_number)
+    print 'Turn {0} - {1}'.format(turn_number, current_player.name)
     print 'Question cards: {0}'.format(format_hand(question_cards))
     current_player.play_turn(question_cards, other_players)
 
