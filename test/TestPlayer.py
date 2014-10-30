@@ -31,6 +31,13 @@ class TestPlayer(unittest.TestCase):
 
         self.assertItemsEqual(['L', '$', 'H'], player.lowest_suits())
 
+    def test_lowest_suits_when_a_suit_has_no_cards(self):
+        player = HumanPlayer('test')
+        for card in [(2, '$'), (8, '$'), (2, 'H')]:
+            player.deal_card(card)
+
+        self.assertItemsEqual(['L'], player.lowest_suits())
+
 
 
 if __name__ == '__main__':

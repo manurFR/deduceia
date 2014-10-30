@@ -60,7 +60,6 @@ def print_secret():
     print 'Secret to play: ' + str_secret
 
 
-
 if __name__ == '__main__':
     print 'Welcome to Deduce or Die! IA'
     print
