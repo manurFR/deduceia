@@ -1,9 +1,9 @@
 from random import choice
 from Deck import hand_sorter, SUITS
-from Interactive import ask_for, help_command, quit_command
+from Interactive import ask_for, help_command, quit_command, print_summary
 
 COMMANDS = {'h': help_command,
-            'r': None,  # summary
+            'r': print_summary,
             't': None,  # history
             'i': None,  # interrogate
             's': None,  # secret
@@ -65,12 +65,13 @@ class HumanPlayer(Player):
         super(HumanPlayer, self).__init__()
         self._name = name
 
-    def play_turn(self, question_cards, other_players):
+    def play_turn(self, human_player, players, extra_card, question_cards):
+        # here self == human_player
         turn_ended = False
         while not turn_ended:
             command = ask_for('Your choice (h for help): ', str, COMMANDS.keys())
             if COMMANDS[command] is not None:
-                turn_ended = COMMANDS[command](question_cards, other_players)
+                turn_ended = COMMANDS[command](human_player, players, extra_card, question_cards)
                 print
 
     # noinspection PyMethodMayBeStatic
@@ -88,7 +89,7 @@ class AIPlayer(Player):
         # choose the low suit to reveal between two or three possible choices
         self.set_low_suit(choice(lowest_suits))
 
-    def play_turn(self, question_cards, other_players):
+    def play_turn(self, human_player, players, extra_card, question_cards):
         pass
 
     # noinspection PyMethodMayBeStatic

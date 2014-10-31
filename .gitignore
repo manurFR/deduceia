@@ -20,5 +20,4 @@ __pycache__/
 # IntelliJ
 out/
 
-
-
+nohup.out

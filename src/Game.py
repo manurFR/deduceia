@@ -1,8 +1,8 @@
 from random import shuffle
 
-from Deck import prepare_deck, deal_deck, format_hand, format_card, draw_question_cards
+from Deck import prepare_deck, deal_deck, format_hand, draw_question_cards
 from Player import HumanPlayer, AIPlayer
-from Interactive import ask_for
+from Interactive import ask_for, print_summary, print_low_suit
 
 
 def prepare_game_deck(nb_decks):
@@ -22,17 +22,6 @@ def prepare_players(nb, player_name):
     return list_players, human
 
 
-def print_summary():
-    print
-    print "Game Summary"
-    print "Your hand: {0}".format(format_hand(human_player.hand))
-    if extra_card:
-        print "Extra card: {0}".format(format_card(extra_card))
-    if human_player.low_suit:
-        print_low_suit()
-    print_secret()
-
-
 def determine_low_suit():
     for player in players:
         lowest_suits = player.lowest_suits()
@@ -46,20 +35,6 @@ def determine_low_suit():
             player.choose_low_suit(lowest_suits)
 
 
-def print_low_suit():
-    str_low_suit = ''
-    for player in players:
-        str_low_suit += '[{0}: {1}] '.format(player.name, player.low_suit)
-    print 'Low Suits: ' + str_low_suit
-
-
-def print_secret():
-    str_secret = ''
-    for player in players:
-        str_secret += '[{0}: {1}] '.format(player.name, player.secret)
-    print 'Secret to play: ' + str_secret
-
-
 def play_turn(turn_number):
     id_current_player = turn_number % len(players)
     current_player = players[id_current_player]
@@ -71,7 +46,7 @@ def play_turn(turn_number):
     print
     print 'Turn {0} - {1}'.format(turn_number, current_player.name)
     print 'Question cards: {0}'.format(format_hand(question_cards))
-    current_player.play_turn(question_cards, other_players)
+    current_player.play_turn(human_player, players, extra_card, question_cards)
 
 
 
@@ -99,11 +74,11 @@ if __name__ == '__main__':
     else:
         extra_card = None
 
-    print_summary()
+    print_summary(human_player, players, extra_card)
 
     determine_low_suit()
     print
-    print_low_suit()
+    print_low_suit(players)
 
     turn = 1
     while True:
