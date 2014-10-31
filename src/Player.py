@@ -8,8 +8,8 @@ COMMANDS = {'h': help_command,
             'i': None,  # interrogate
             's': None,  # secret
             'a': None,  # accuse
-            'q': quit_command,
-}
+            'q': quit_command}
+
 
 class Player(object):
 

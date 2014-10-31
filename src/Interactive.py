@@ -48,11 +48,11 @@ def print_low_suit(players):
     str_low_suit = ''
     for player in players:
         str_low_suit += '[{0}: {1}] '.format(player.name, player.low_suit)
-    print 'Low Suits: ' + str_low_suit
+    print 'Low Suits: ' + str_low_suit.strip()
 
 
 def print_secret(players):
     str_secret = ''
     for player in players:
         str_secret += '[{0}: {1}] '.format(player.name, player.secret)
-    print 'Secret to play: ' + str_secret
+    print 'Secret to play: ' + str_secret.strip()
