@@ -1,18 +1,16 @@
 import unittest
 
-from Interactive import print_low_suit, print_secret, print_summary, ask_for
+from Interactive import print_low_suit, print_secret, print_summary, ask_for, quit_command
 import Interactive
 from Player import HumanPlayer
 from TestUtils import captured_output
-
-
-nb = 0
 
 
 def output(stringio):
     return stringio.getvalue().strip()
 
 
+# noinspection PyUnboundLocalVariable
 class MyTestCase(unittest.TestCase):
     def test_print_low_suit(self):
         players = [HumanPlayer('john'), HumanPlayer('jim')]
@@ -48,7 +46,7 @@ class MyTestCase(unittest.TestCase):
         human.set_low_suit('H')
 
         with captured_output() as (out, err):
-            print_summary(human, [human], extra_card=(5, 'L'))
+            self.assertFalse(print_summary(human, [human], extra_card=(5, 'L')))
 
         self.assertEqual(
             'Game Summary\nYour hand: 3L 5H 9$\nExtra card: 5L\nLow Suits: [john: H]\nSecret to play: [john: 1]',
@@ -65,20 +63,21 @@ class MyTestCase(unittest.TestCase):
 
     def test_ask_for_with_control(self):
         def temp_raw_input(_):
-            global nb
-            if nb == 1:
-                nb += 1
-                return 'x'
+            global type_allowed_input
+            if not type_allowed_input:
+                return_val = 'x'
             else:
-                return 'a'
+                return_val = 'a'
+            type_allowed_input = not type_allowed_input
+            return return_val
 
         try:
-            global nb
-            nb = 1
+            global type_allowed_input
             old_raw_input = raw_input
             Interactive.raw_input = temp_raw_input
 
             with captured_output() as (out, err):
+                type_allowed_input = False
                 response = ask_for('a or b ?', unicode, ['a', 'b'])
 
             self.assertEqual(u'a', response)
@@ -94,6 +93,32 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(123, ask_for('what?', wanted_type=int))
         finally:
             Interactive.raw_input = old_raw_input
+
+    def test_quit_but_dont_confirm(self):
+        try:
+            old_raw_input = raw_input
+            Interactive.raw_input = lambda _: 'n'
+
+            self.assertEqual(False, quit_command())
+        except SystemExit:
+            self.fail("Should not exit in this case")
+        finally:
+            Interactive.raw_input = old_raw_input
+
+    def test_quit_and_confirm(self):
+        try:
+            old_raw_input = raw_input
+            Interactive.raw_input = lambda _: 'y'
+
+            with captured_output() as (out, err):
+                quit_command()
+
+            self.fail("Should exit in this case")
+        except SystemExit:
+            self.assertEqual("Bye.", output(out))
+        finally:
+            Interactive.raw_input = old_raw_input
+
 
 if __name__ == '__main__':
     unittest.main()
