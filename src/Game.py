@@ -89,5 +89,3 @@ if __name__ == '__main__':
     while True:
         play_turn(turn)
         turn += 1
-        if turn == 5:
-            break

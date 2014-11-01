@@ -1,6 +1,6 @@
 import unittest
 from Deck import prepare_deck, resolve_murder_card, deal_deck, calculate_rounds, format_card, format_hand, \
-    draw_question_cards
+    draw_question_cards, Range
 from Player import HumanPlayer, AIPlayer
 
 
@@ -63,6 +63,44 @@ class TestDeck(unittest.TestCase):
         self.assertIn('card1', drawn_cards)
         self.assertEqual(0, len(discard_deck))
         self.assertEqual(1, len(interrogation_deck))
+
+
+class TestRange(unittest.TestCase):
+    def test_suits_has_the_common_suit_when_both_cards_are_the_same_suit(self):
+        self.assertEqual(['H'], (Range((1, 'H'), (7, 'H'))).suits)
+
+    def test_suits_is_always_all_suits_when_cards_are_of_different_suits(self):
+        self.assertEqual(['L', 'H', '$'], Range((3, 'L'), (3, 'H')).suits)
+
+    def test_ranks_is_as_expected_when_the_low_card_is_lower_than_the_high_card(self):
+        self.assertEqual([6, 7, 8, 9], Range((6, 'L'), (9, '$')).ranks)
+
+    def test_ranks_extend_around_the_corner_when_the_low_card_is_higher_than_the_high_card(self):
+        self.assertEqual([8, 9, 1, 2, 3], Range((8, '$'), (3, '$')).ranks)
+
+    def test_range_is_all_three_numbers_when_the_low_card_is_the_same_as_the_high_card_with_different_suits(self):
+        card_range = Range((5, '$'), (5, 'L'))
+        self.assertEqual([5], card_range.ranks)
+        self.assertEqual(['L', 'H', '$'], card_range.suits)
+
+    def test_range_requires_choice_when_both_cards_are_the_same(self):
+        with self.assertRaises(AssertionError):
+            card_range = Range((4, 'H'), (4, 'H'))
+
+    def test_range_requires_valid_choice_when_both_cards_are_the_same(self):
+        with self.assertRaises(AssertionError):
+            card_range = Range((4, 'H'), (4, 'H'), choice='RANKS')
+
+    def test_range_is_all_suits_when_both_cards_are_the_same_and_choice_is_rank(self):
+        card_range = Range((4, 'H'), (4, 'H'), choice='rank')
+        self.assertEqual(['L', 'H', '$'], card_range.suits)
+        self.assertEqual([4], card_range.ranks)
+
+    def test_range_is_all_ranks_when_both_cards_are_the_same_and_choice_is_suit(self):
+        card_range = Range((4, 'H'), (4, 'H'), choice='suit')
+        self.assertEqual(['H'], card_range.suits)
+        self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9], card_range.ranks)
+
 
 
 if __name__ == '__main__':

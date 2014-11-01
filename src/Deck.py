@@ -56,3 +56,35 @@ def draw_question_cards(interrogation_deck, discard_deck):
     for _ in range(len(question_cards), NB_QUESTION_CARDS):
         question_cards.append(interrogation_deck.pop())
     return question_cards
+
+
+class Range(object):
+    def __init__(self, low_card, high_card, choice=None):
+        self.low_card = low_card
+        self.high_card = high_card
+        if low_card == high_card:
+            assert choice in ['rank', 'suit']
+            self.identical_cards = True
+            self.choice = choice
+        else:
+            self.identical_cards = False
+
+    @property
+    def suits(self):
+        if self.low_card[1] == self.high_card[1]:
+            if self.identical_cards and self.choice == 'rank':
+                return SUITS
+            else:
+                return [self.low_card[1]]
+        else:
+            return SUITS
+
+    @property
+    def ranks(self):
+        if self.low_card[0] <= self.high_card[0]:
+            if self.identical_cards and self.choice == 'suit':
+                return RANKS
+            else:
+                return range(self.low_card[0], self.high_card[0] + 1)  # upper limit of range() is excluded
+        elif self.low_card[0] > self.high_card[0]:  # wrap around the corner
+            return range(self.low_card[0], len(RANKS) + 1) + range(1, self.high_card[0] + 1)
