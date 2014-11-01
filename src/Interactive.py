@@ -1,4 +1,5 @@
 import sys
+
 from Deck import format_hand, format_card
 
 
@@ -11,7 +12,7 @@ def ask_for(prompt, wanted_type=unicode, allowed=[]):
             return wanted_type(response)
 
 
-def help_command(*_):
+def help_command(_):
     print
     print "Commands:"
     print " [h] (help) this command"
@@ -24,7 +25,7 @@ def help_command(*_):
     return False  # turn not ended
 
 
-def quit_command(*_):
+def quit_command(_):
     sure = ask_for('Are you sure [y/n] ? ')
     if sure.strip() == 'y':
         print "Bye."
@@ -32,15 +33,15 @@ def quit_command(*_):
     return False  # turn not ended
 
 
-def print_summary(human_player, players, extra_card, *_):
+def print_summary(state):
     print
     print "Game Summary"
-    print "Your hand: {0}".format(format_hand(human_player.hand))
-    if extra_card:
-        print "Extra card: {0}".format(format_card(extra_card))
-    if human_player.low_suit:
-        print_low_suit(players)
-    print_secret(players)
+    print "Your hand: {0}".format(format_hand(state.human_player.hand))
+    if state.extra_card:
+        print "Extra card: {0}".format(format_card(state.extra_card))
+    if state.human_player.low_suit:
+        print_low_suit(state.players)
+    print_secret(state.players)
     return False  # turn not ended
 
 

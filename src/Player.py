@@ -65,13 +65,13 @@ class HumanPlayer(Player):
         super(HumanPlayer, self).__init__()
         self._name = name
 
-    def play_turn(self, human_player, players, extra_card, question_cards):
+    def play_turn(self, state):
         # here self == human_player
         turn_ended = False
         while not turn_ended:
             command = ask_for('Your choice (h for help): ', str, COMMANDS.keys())
             if COMMANDS[command] is not None:
-                turn_ended = COMMANDS[command](human_player, players, extra_card, question_cards)
+                turn_ended = COMMANDS[command](state)
                 print
 
     # noinspection PyMethodMayBeStatic
@@ -89,7 +89,7 @@ class AIPlayer(Player):
         # choose the low suit to reveal between two or three possible choices
         self.set_low_suit(choice(lowest_suits))
 
-    def play_turn(self, human_player, players, extra_card, question_cards):
+    def play_turn(self, state):
         pass
 
     # noinspection PyMethodMayBeStatic

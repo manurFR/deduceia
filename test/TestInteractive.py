@@ -1,4 +1,5 @@
 import unittest
+from GameState import GameState
 
 from Interactive import print_low_suit, print_secret, print_summary, ask_for, quit_command
 import Interactive
@@ -35,8 +36,12 @@ class MyTestCase(unittest.TestCase):
         human = HumanPlayer('john')
         human._hand = [(3, 'L'), (5, 'H'), (9, '$')]
 
+        state = GameState()
+        state.human_player = human
+        state.players = [human]
+
         with captured_output() as (out, err):
-            print_summary(human, [human], extra_card=None)
+            print_summary(state)
 
         self.assertEqual('Game Summary\nYour hand: 3L 5H 9$\nSecret to play: [john: 1]', output(out))
 
@@ -45,8 +50,13 @@ class MyTestCase(unittest.TestCase):
         human._hand = [(3, 'L'), (5, 'H'), (9, '$')]
         human.set_low_suit('H')
 
+        state = GameState()
+        state.human_player = human
+        state.players = [human]
+        state.extra_card = (5, 'L')
+
         with captured_output() as (out, err):
-            self.assertFalse(print_summary(human, [human], extra_card=(5, 'L')))
+            self.assertFalse(print_summary(state))
 
         self.assertEqual(
             'Game Summary\nYour hand: 3L 5H 9$\nExtra card: 5L\nLow Suits: [john: H]\nSecret to play: [john: 1]',
@@ -99,7 +109,7 @@ class MyTestCase(unittest.TestCase):
             old_raw_input = raw_input
             Interactive.raw_input = lambda _: 'n'
 
-            self.assertEqual(False, quit_command())
+            self.assertEqual(False, quit_command(None))
         except SystemExit:
             self.fail("Should not exit in this case")
         finally:
@@ -111,7 +121,7 @@ class MyTestCase(unittest.TestCase):
             Interactive.raw_input = lambda _: 'y'
 
             with captured_output() as (out, err):
-                quit_command()
+                quit_command(None)
 
             self.fail("Should exit in this case")
         except SystemExit:
