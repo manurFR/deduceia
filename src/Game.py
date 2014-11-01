@@ -3,7 +3,7 @@ from random import shuffle
 from Deck import prepare_deck, deal_deck, format_hand, draw_question_cards
 from GameState import GameState
 from Player import HumanPlayer, AIPlayer
-from Interactive import ask_for, print_summary, print_low_suit
+from Interactive import ask_for, print_summary, print_low_suit, print_question_cards
 
 state = GameState()
 
@@ -38,23 +38,22 @@ def determine_low_suit():
             player.choose_low_suit(lowest_suits)
 
 
-def play_turn(turn_number):
-    id_current_player = turn_number % len(players)
-    current_player = players[id_current_player]
+def play_turn(game_state):
+    id_current_player = game_state.turn % len(players)
+    game_state.current_player = players[id_current_player]
     other_players = []
     for i in range(1, len(players)):
         other_players.append(players[(id_current_player + i) % len(players)])
 
-    state.question_cards = draw_question_cards(state.interrogation_deck, state.discard_deck)
+    game_state.question_cards = draw_question_cards(game_state.interrogation_deck, game_state.discard_deck)
     print
-    print 'Turn {0} - {1}'.format(turn_number, current_player.name)
-    print 'Question cards: {0}'.format(format_hand(state.question_cards))
-    current_player.play_turn(state)
-
+    print 'Turn {0} - {1}'.format(game_state.turn, game_state.current_player.name)
+    print_question_cards(game_state)
+    game_state.current_player.play_turn(game_state)
+    game_state.turn += 1
 
 
 if __name__ == '__main__':
-
     print 'Welcome to Deduce or Die! IA'
     print
     nb_players = ask_for('Number of players : ', int, ['3', '4', '5', '6'])
@@ -85,7 +84,6 @@ if __name__ == '__main__':
     print
     print_low_suit(players)
 
-    turn = 1
+    state.turn = 1
     while True:
-        play_turn(turn)
-        turn += 1
+        play_turn(state)

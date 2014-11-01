@@ -1,7 +1,8 @@
 import unittest
-from GameState import GameState
 
-from Interactive import print_low_suit, print_secret, print_summary, ask_for, quit_command
+from GameState import GameState
+from Interactive import print_low_suit, print_secret, print_summary, ask_for, quit_command, interrogate_command, \
+    print_question_cards
 import Interactive
 from Player import HumanPlayer
 from TestUtils import captured_output
@@ -10,6 +11,19 @@ from TestUtils import captured_output
 def output(stringio):
     return stringio.getvalue().strip()
 
+
+def mock_raw_input(*inputs):
+    def temp_raw_input(_):
+        global index_of_prompt
+        try:
+            reponse = inputs[index_of_prompt]
+        except IndexError:
+            raise AssertionError("mock_raw_input() was asked for too much input")
+        index_of_prompt += 1
+        return reponse
+    global index_of_prompt
+    index_of_prompt = 0
+    return temp_raw_input
 
 # noinspection PyUnboundLocalVariable
 class MyTestCase(unittest.TestCase):
@@ -31,6 +45,16 @@ class MyTestCase(unittest.TestCase):
             print_secret(players)
 
         self.assertEqual('Secret to play: [john: 1] [jim: 0]', output(out))
+
+    def test_print_question_cards(self):
+        state = GameState
+        state.question_cards = [(3, 'L'), (3, 'H'), (6, '$')]
+
+        with captured_output() as (out, err):
+            print_question_cards(state)
+
+        self.assertEqual('Question cards: 3L 3H 6$', output(out))
+
 
     def test_print_summary_at_start(self):
         human = HumanPlayer('john')
@@ -65,29 +89,18 @@ class MyTestCase(unittest.TestCase):
     def test_ask_for(self):
         try:
             old_raw_input = raw_input
-            Interactive.raw_input = lambda _: 'test'
+            Interactive.raw_input = mock_raw_input('test')
 
             self.assertEqual(u'test', ask_for('what?'))
         finally:
             Interactive.raw_input = old_raw_input
 
     def test_ask_for_with_control(self):
-        def temp_raw_input(_):
-            global type_allowed_input
-            if not type_allowed_input:
-                return_val = 'x'
-            else:
-                return_val = 'a'
-            type_allowed_input = not type_allowed_input
-            return return_val
-
         try:
-            global type_allowed_input
             old_raw_input = raw_input
-            Interactive.raw_input = temp_raw_input
+            Interactive.raw_input = mock_raw_input('invalid response', 'a')
 
             with captured_output() as (out, err):
-                type_allowed_input = False
                 response = ask_for('a or b ?', unicode, ['a', 'b'])
 
             self.assertEqual(u'a', response)
@@ -98,7 +111,7 @@ class MyTestCase(unittest.TestCase):
     def test_ask_for_with_cast(self):
         try:
             old_raw_input = raw_input
-            Interactive.raw_input = lambda _: '123'
+            Interactive.raw_input = mock_raw_input('123')
 
             self.assertEqual(123, ask_for('what?', wanted_type=int))
         finally:
@@ -107,7 +120,7 @@ class MyTestCase(unittest.TestCase):
     def test_quit_but_dont_confirm(self):
         try:
             old_raw_input = raw_input
-            Interactive.raw_input = lambda _: 'n'
+            Interactive.raw_input = mock_raw_input('n')
 
             self.assertEqual(False, quit_command(None))
         except SystemExit:
@@ -118,7 +131,7 @@ class MyTestCase(unittest.TestCase):
     def test_quit_and_confirm(self):
         try:
             old_raw_input = raw_input
-            Interactive.raw_input = lambda _: 'y'
+            Interactive.raw_input = mock_raw_input('y')
 
             with captured_output() as (out, err):
                 quit_command(None)
@@ -126,6 +139,50 @@ class MyTestCase(unittest.TestCase):
             self.fail("Should exit in this case")
         except SystemExit:
             self.assertEqual("Bye.", output(out))
+        finally:
+            Interactive.raw_input = old_raw_input
+
+    def test_interrogate_asks_for_two_cards_and_puts_the_range_in_history(self):
+        try:
+            old_raw_input = raw_input
+            Interactive.raw_input = mock_raw_input('3L', '7L')
+
+            player = HumanPlayer('joe')
+
+            state = GameState()
+            state.turn = 10
+            state.current_player = player
+            state.question_cards = [(1, 'L'), (3, 'L'), (7, 'L')]
+
+            with captured_output() as (out, err):
+                turn_ended = interrogate_command(state)
+
+            self.assertEqual('Interrogate\nQuestion cards: 1L 3L 7L', output(out))
+            turn = state.history.pop()
+            self.assertEqual(10, turn['turn'])
+            self.assertEqual(player, turn['player'])
+            self.assertEqual('interrogate', turn['action'])
+            self.assertEqual(['L'], turn['range'].suits)
+            self.assertEqual([3, 4, 5, 6, 7], turn['range'].ranks)
+            self.assertTrue(turn_ended)
+        finally:
+            Interactive.raw_input = old_raw_input
+
+    def test_interrogate_lets_you_cancel_and_do_nothing(self):
+        try:
+            old_raw_input = raw_input
+            Interactive.raw_input = mock_raw_input('3L', 'cancel')
+
+            state = GameState()
+            state.history = []
+            state.question_cards = [(1, 'L'), (3, 'L'), (7, 'L')]
+
+            with captured_output() as (out, err):
+                turn_ended = interrogate_command(state)
+
+            self.assertEqual('Interrogate\nQuestion cards: 1L 3L 7L', output(out))
+            self.assertEqual(0, len(state.history))
+            self.assertFalse(turn_ended)
         finally:
             Interactive.raw_input = old_raw_input
 

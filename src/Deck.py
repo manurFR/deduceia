@@ -40,6 +40,15 @@ def format_hand(cards):
     return ' '.join(format_card(card) for card in cards)
 
 
+def parse_card(card):
+    assert isinstance(card, basestring)
+    assert len(card) == 2
+    assert card[0].isdigit()
+    assert int(card[0]) in RANKS
+    assert card[1] in SUITS
+    return int(card[0]), card[1]
+
+
 def hand_sorter(card):
     return 10 * SUITS.index(card[1]) + card[0]
 
@@ -55,7 +64,7 @@ def draw_question_cards(interrogation_deck, discard_deck):
 
     for _ in range(len(question_cards), NB_QUESTION_CARDS):
         question_cards.append(interrogation_deck.pop())
-    return question_cards
+    return sorted(question_cards, key=hand_sorter)
 
 
 class Range(object):

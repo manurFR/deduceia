@@ -1,6 +1,6 @@
 import unittest
 from Deck import prepare_deck, resolve_murder_card, deal_deck, calculate_rounds, format_card, format_hand, \
-    draw_question_cards, Range
+    draw_question_cards, Range, parse_card
 from Player import HumanPlayer, AIPlayer
 
 
@@ -48,19 +48,22 @@ class TestDeck(unittest.TestCase):
     def test_format_hand(self):
         self.assertEqual('3H 8$ 4L', format_hand([(3, 'H'), (8, '$'), (4, 'L')]))
 
-    def test_draw_question_cards(self):
-        interrogation_deck = ['card1', 'card2', 'card3', 'card4']
+    def test_parse_card(self):
+        self.assertEqual((5, 'L'), parse_card('5L'))
 
-        self.assertItemsEqual(['card2', 'card3', 'card4'], draw_question_cards(interrogation_deck, []))
-        self.assertEqual(['card1'], interrogation_deck)
+    def test_draw_question_cards(self):
+        interrogation_deck = [(8, 'H'), (3, '$'), (1, '$'), (1, 'L')]
+
+        self.assertItemsEqual([(1, 'L'), (1, '$'), (3, '$')], draw_question_cards(interrogation_deck, []))
+        self.assertEqual([(8, 'H')], interrogation_deck)
 
     def test_draw_question_cards_when_there_are_not_enough_cards_in_the_interrogation_deck(self):
-        interrogation_deck = ['card1']
-        discard_deck = ['card2', 'card3', 'card4']
+        interrogation_deck = [(4, 'L')]
+        discard_deck = [(3, '$'), (6, 'H'), (7, 'L')]
 
         drawn_cards = draw_question_cards(interrogation_deck, discard_deck)
         self.assertEqual(3, len(drawn_cards))
-        self.assertIn('card1', drawn_cards)
+        self.assertIn((4, 'L'), drawn_cards)
         self.assertEqual(0, len(discard_deck))
         self.assertEqual(1, len(interrogation_deck))
 

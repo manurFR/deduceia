@@ -1,6 +1,6 @@
 import sys
 
-from Deck import format_hand, format_card
+from Deck import format_hand, format_card, Range, parse_card
 
 
 def ask_for(prompt, wanted_type=unicode, allowed=[]):
@@ -42,6 +42,7 @@ def print_summary(state):
     if state.human_player.low_suit:
         print_low_suit(state.players)
     print_secret(state.players)
+    # TODO add current turn & question cards
     return False  # turn not ended
 
 
@@ -57,3 +58,27 @@ def print_secret(players):
     for player in players:
         str_secret += '[{0}: {1}] '.format(player.name, player.secret)
     print 'Secret to play: ' + str_secret.strip()
+
+
+def print_question_cards(state):
+    print 'Question cards: {0}'.format(format_hand(state.question_cards))
+
+
+def interrogate_command(state):
+    print
+    print "Interrogate"
+    print_question_cards(state)
+    allowed_cards = [format_card(card) for card in state.question_cards]
+    allowed_cards.append('cancel')
+    low_card = ask_for('Select low card (or \'cancel\'): ', str, allowed_cards)
+    if low_card == 'cancel':
+        return False  # turn not ended
+    allowed_cards.remove(low_card)
+    high_card = ask_for('Select high card (or \'cancel\'): ', str, allowed_cards)
+    if high_card == 'cancel':
+        return False  # turn not ended
+    state.history.append({'turn': state.turn,
+                          'player': state.current_player,
+                          'action': 'interrogate',
+                          'range': Range(parse_card(low_card), parse_card(high_card))})
+    return True  # turn ended

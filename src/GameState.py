@@ -8,4 +8,8 @@ class GameState(object):
         self.evidence_cards = []
         self.extra_card = None
 
+        self.turn = 0
+        self.current_player = None
         self.question_cards = []
+
+        self.history = []
