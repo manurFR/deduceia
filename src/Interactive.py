@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import sys
 
 from Deck import format_hand, format_card, Range, parse_card
@@ -64,10 +65,29 @@ def print_question_cards(state):
     print 'Question cards: {0}'.format(format_hand(state.question_cards))
 
 
+def choose_an_opponent(state):
+    opponents = OrderedDict()
+
+    list_opponents = list(state.players)
+    list_opponents.remove(state.current_player)
+    list_opponents.sort(key=lambda o: o.id)
+
+    for player in list_opponents:
+        opponents[player.id] = player
+
+    allowed = [str(_id) for _id in opponents.keys()]
+
+    chosen_id = ask_for('Which opponent ? [{0}] '.format(' '.join(str(_id) + ':' + player.name
+                                                                  for _id, player in opponents.iteritems())),
+                        int, allowed)
+
+    return opponents[chosen_id]
+
 def interrogate_command(state):
     print
     print "Interrogate"
     print_question_cards(state)
+    opponent = choose_an_opponent(state)
     allowed_cards = [format_card(card) for card in state.question_cards]
     allowed_cards.append('cancel')
     low_card = ask_for('Select low card (or \'cancel\'): ', str, allowed_cards)
@@ -80,5 +100,6 @@ def interrogate_command(state):
     state.history.append({'turn': state.turn,
                           'player': state.current_player,
                           'action': 'interrogate',
+                          'opponent': opponent,
                           'range': Range(parse_card(low_card), parse_card(high_card))})
     return True  # turn ended

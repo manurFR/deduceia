@@ -83,6 +83,7 @@ class AIPlayer(Player):
 
     def __init__(self, id):
         super(AIPlayer, self).__init__()
+        self.id = id
         self._name = 'AI#{0}'.format(id)
 
     def choose_low_suit(self, lowest_suits):

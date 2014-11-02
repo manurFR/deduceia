@@ -5,6 +5,7 @@ from GameState import GameState
 from Player import HumanPlayer, AIPlayer
 from Interactive import ask_for, print_summary, print_low_suit, print_question_cards
 
+
 state = GameState()
 
 

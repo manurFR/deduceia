@@ -2,9 +2,9 @@ import unittest
 
 from GameState import GameState
 from Interactive import print_low_suit, print_secret, print_summary, ask_for, quit_command, interrogate_command, \
-    print_question_cards
+    print_question_cards, choose_an_opponent
 import Interactive
-from Player import HumanPlayer
+from Player import HumanPlayer, AIPlayer
 from TestUtils import captured_output
 
 
@@ -142,16 +142,40 @@ class MyTestCase(unittest.TestCase):
         finally:
             Interactive.raw_input = old_raw_input
 
+    def test_choose_an_opponent(self):
+        try:
+            old_raw_input = raw_input
+            Interactive.raw_input = mock_raw_input('5', '2')
+
+            player = HumanPlayer('joe')
+            ai1 = AIPlayer(1)
+            ai2 = AIPlayer(2)
+            ai3 = AIPlayer(3)
+
+            state = GameState()
+            state.turn = 1
+            state.current_player = player
+            state.players = [ai2, player, ai3, ai1]
+
+            with captured_output() as (out, err):
+                chosen_opponent = choose_an_opponent(state)
+
+            self.assertEqual(ai2, chosen_opponent)
+        finally:
+            Interactive.raw_input = old_raw_input
+
     def test_interrogate_asks_for_two_cards_and_puts_the_range_in_history(self):
         try:
             old_raw_input = raw_input
-            Interactive.raw_input = mock_raw_input('3L', '7L')
+            Interactive.raw_input = mock_raw_input('1', '3L', '7L')  # opponent id, low card, high card
 
             player = HumanPlayer('joe')
+            ai = AIPlayer(1)
 
             state = GameState()
             state.turn = 10
             state.current_player = player
+            state.players = [player, ai]
             state.question_cards = [(1, 'L'), (3, 'L'), (7, 'L')]
 
             with captured_output() as (out, err):
@@ -161,6 +185,7 @@ class MyTestCase(unittest.TestCase):
             turn = state.history.pop()
             self.assertEqual(10, turn['turn'])
             self.assertEqual(player, turn['player'])
+            self.assertEqual(ai, turn['opponent'])
             self.assertEqual('interrogate', turn['action'])
             self.assertEqual(['L'], turn['range'].suits)
             self.assertEqual([3, 4, 5, 6, 7], turn['range'].ranks)
@@ -171,9 +196,14 @@ class MyTestCase(unittest.TestCase):
     def test_interrogate_lets_you_cancel_and_do_nothing(self):
         try:
             old_raw_input = raw_input
-            Interactive.raw_input = mock_raw_input('3L', 'cancel')
+            Interactive.raw_input = mock_raw_input('1', '3L', 'cancel')
+
+            player = HumanPlayer('joe')
+            ai = AIPlayer(1)
 
             state = GameState()
+            state.current_player = player
+            state.players = [player, ai]
             state.history = []
             state.question_cards = [(1, 'L'), (3, 'L'), (7, 'L')]
 
