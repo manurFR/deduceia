@@ -97,3 +97,6 @@ class Range(object):
                 return range(self.low_card[0], self.high_card[0] + 1)  # upper limit of range() is excluded
         elif self.low_card[0] > self.high_card[0]:  # wrap around the corner
             return range(self.low_card[0], len(RANKS) + 1) + range(1, self.high_card[0] + 1)
+
+    def __iter__(self):
+        return iter((rank, suit) for rank in self.ranks for suit in self.suits)

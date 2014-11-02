@@ -83,6 +83,7 @@ def choose_an_opponent(state):
 
     return opponents[chosen_id]
 
+
 def interrogate_command(state):
     print
     print "Interrogate"
@@ -97,9 +98,13 @@ def interrogate_command(state):
     high_card = ask_for('Select high card (or \'cancel\'): ', str, allowed_cards)
     if high_card == 'cancel':
         return False  # turn not ended
-    state.history.append({'turn': state.turn,
-                          'player': state.current_player,
-                          'action': 'interrogate',
-                          'opponent': opponent,
-                          'range': Range(parse_card(low_card), parse_card(high_card))})
+    card_range = Range(parse_card(low_card), parse_card(high_card))
+    result = opponent.cards_in_range(card_range)
+    print "Cards in this range: {0}".format(result)
+    state.history.append({'turn':      state.turn,
+                          'player':    state.current_player,
+                          'action':    'interrogate',
+                          'opponent':  opponent,
+                          'range':     card_range,
+                          'result':    result})
     return True  # turn ended

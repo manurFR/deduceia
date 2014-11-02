@@ -164,13 +164,14 @@ class MyTestCase(unittest.TestCase):
         finally:
             Interactive.raw_input = old_raw_input
 
-    def test_interrogate_asks_for_two_cards_and_puts_the_range_in_history(self):
+    def test_interrogate_asks_for_two_cards_puts_the_range_in_history_and_display_the_result(self):
         try:
             old_raw_input = raw_input
             Interactive.raw_input = mock_raw_input('1', '3L', '7L')  # opponent id, low card, high card
 
             player = HumanPlayer('joe')
             ai = AIPlayer(1)
+            ai._hand = [(1, 'L'), (3, 'L'), (6, 'L'), (2, 'H'), (8, '$'), (9, '$')]
 
             state = GameState()
             state.turn = 10
@@ -181,7 +182,7 @@ class MyTestCase(unittest.TestCase):
             with captured_output() as (out, err):
                 turn_ended = interrogate_command(state)
 
-            self.assertEqual('Interrogate\nQuestion cards: 1L 3L 7L', output(out))
+            self.assertEqual('Interrogate\nQuestion cards: 1L 3L 7L\nCards in this range: 2', output(out))
             turn = state.history.pop()
             self.assertEqual(10, turn['turn'])
             self.assertEqual(player, turn['player'])
@@ -189,6 +190,7 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual('interrogate', turn['action'])
             self.assertEqual(['L'], turn['range'].suits)
             self.assertEqual([3, 4, 5, 6, 7], turn['range'].ranks)
+            self.assertEqual(2, turn['result'])
             self.assertTrue(turn_ended)
         finally:
             Interactive.raw_input = old_raw_input

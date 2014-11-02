@@ -104,6 +104,19 @@ class TestRange(unittest.TestCase):
         self.assertEqual(['H'], card_range.suits)
         self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9], card_range.ranks)
 
+    def test_range_provides_an_iterator(self):
+        card_range = Range((3, 'L'), (4, 'H'))
+        iterator = iter(card_range)
+
+        self.assertEqual((3, 'L'), iterator.next())
+        self.assertEqual((3, 'H'), iterator.next())
+        self.assertEqual((3, '$'), iterator.next())
+        self.assertEqual((4, 'L'), iterator.next())
+        self.assertEqual((4, 'H'), iterator.next())
+        self.assertEqual((4, '$'), iterator.next())
+        with self.assertRaises(StopIteration):
+            iterator.next()
+
 
 
 if __name__ == '__main__':

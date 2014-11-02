@@ -1,5 +1,6 @@
 import unittest
-from Player import HumanPlayer
+from Deck import Range
+from Player import HumanPlayer, Player
 
 
 class TestPlayer(unittest.TestCase):
@@ -38,6 +39,23 @@ class TestPlayer(unittest.TestCase):
 
         self.assertItemsEqual(['L'], player.lowest_suits())
 
+    def test_no_cards_in_range(self):
+        player = Player()
+        for card in [(2, '$'), (8, '$'), (4, 'L'), (5, 'L')]:
+            player.deal_card(card)
+
+        card_range = Range((6, 'L'), (7, 'H'))  # 6 & 7 for all suits
+
+        self.assertEqual(0, player.cards_in_range(card_range))
+
+    def test_cards_in_range_more_than_zero(self):
+        player = Player()
+        for card in [(4, 'L'), (5, 'L'), (2, 'H'), (5, 'H'), (9, 'H'), (2, '$'), (8, '$'), ]:
+            player.deal_card(card)
+
+        card_range = Range((1, 'H'), (7, 'H'))  # 1 to 7 of hate
+
+        self.assertEqual(2, player.cards_in_range(card_range))
 
 
 if __name__ == '__main__':

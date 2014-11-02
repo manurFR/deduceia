@@ -42,6 +42,9 @@ class Player(object):
     def set_low_suit(self, suit):
         self._low_suit = suit
 
+    def cards_in_range(self, card_range):
+        return len([card for card in iter(card_range) if card in self.hand])
+
     @property
     def name(self):
         return self._name
