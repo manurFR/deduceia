@@ -4,6 +4,7 @@ import sys
 from Deck import format_hand, format_card, Range, parse_card
 
 CANCEL = "**CANCEL**"
+HIDDEN = "**HIDDEN**"
 
 
 def ask_for(prompt, wanted_type=unicode, allowed=[]):
@@ -120,9 +121,9 @@ def interrogate_command(state):
     result = opponent.cards_in_range(card_range)
     print "Cards in this range: {0}".format(result)
     state.history.append({'turn':      state.turn,
-                          'player':    state.current_player.name,
+                          'player':    state.current_player,
                           'action':    'interrogate',
-                          'opponent':  opponent.name,
+                          'opponent':  opponent,
                           'range':     card_range,
                           'result':    result})
     return True  # turn ended
@@ -147,9 +148,9 @@ def secret_command(state):
     result = opponent.cards_in_range(card_range)
     print "Cards in this range: {0}".format(result)
     state.history.append({'turn':      state.turn,
-                          'player':    state.current_player.name,
+                          'player':    state.current_player,
                           'action':    'secret',
-                          'opponent':  opponent.name,
+                          'opponent':  opponent,
                           'range':     card_range,
                           'result':    result})
     return True  # turn ended
@@ -159,9 +160,10 @@ def maxlength_by_column(data):
     maxlength = {}
     for row in data:
         for key, value in row.iteritems():
-            # take the length of the key as the default minimum length since the key will displayed as the header
-            current_length = maxlength.get(key, len(key))
-            maxlength[key] = max(current_length, len(str(value)))
+            if value != HIDDEN:
+                # take the length of the key as the default minimum length since the key will displayed as the header
+                current_length = maxlength.get(key, len(key))
+                maxlength[key] = max(current_length, len(str(value)))
     return maxlength
 
 
@@ -170,6 +172,9 @@ def print_tabular_data(data, columns):
     fmt_string = '  '.join('{' + column + ':<' + str(maxlengths[column]) + '}' for column in columns)
     print fmt_string.format(**dict((header, header.capitalize()) for header in maxlengths.keys()))  # header line
     for row in data:
+        for key, value in row.iteritems():
+            if value == HIDDEN:
+                row[key] = '*' * maxlengths[key]
         print fmt_string.format(**row)
 
 
@@ -178,6 +183,33 @@ def print_history(state):
     if len(state.history) == 0:
         print "No turns to display"
         return
+    # preprocess
+    data = []
+    for row in state.history:
+        if row['action'] == 'interrogate':
+            data.append({'turn':     row['turn'],
+                         'player':   row['player'].name,
+                         'opponent': row['opponent'].name,
+                         'range':    row['range'],
+                         'result':   row['result'],
+                         'note':     ''})
+        elif row['action'] == 'secret':
+            if state.current_player in [row['player'], row['opponent']]:
+                # Secrets can be seen only by prosecutor and witness
+                data.append({'turn':     row['turn'],
+                             'player':   row['player'].name,
+                             'opponent': row['opponent'].name,
+                             'range':    row['range'],
+                             'result':   row['result'],
+                             'note':     '(Secret)'})
+            else:
+                data.append({'turn':     row['turn'],
+                             'player':   row['player'].name,
+                             'opponent': row['opponent'].name,
+                             'range':    HIDDEN,
+                             'result':   HIDDEN,
+                             'note':     '(Secret)'})
+
     print "History"
-    print_tabular_data(state.history, ['turn', 'player', 'opponent', 'range', 'result'])
+    print_tabular_data(data, ['turn', 'player', 'opponent', 'range', 'result', 'note'])
     return False  # turn not ended

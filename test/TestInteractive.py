@@ -3,7 +3,8 @@ from Deck import Range
 
 from GameState import GameState
 from Interactive import print_low_suit, print_secret, print_summary, ask_for, quit_command, interrogate_command, \
-    print_question_cards, choose_an_opponent, maxlength_by_column, print_tabular_data, print_history, secret_command
+    print_question_cards, choose_an_opponent, maxlength_by_column, print_tabular_data, print_history, secret_command, \
+    HIDDEN
 import Interactive
 from Player import HumanPlayer, AIPlayer
 from TestUtils import captured_output
@@ -194,8 +195,8 @@ class MyTestCase(unittest.TestCase):
                              'Cards in this range: 2', output(out))
             turn = state.history.pop()
             self.assertEqual(10, turn['turn'])
-            self.assertEqual('joe', turn['player'])
-            self.assertEqual('AI#1', turn['opponent'])
+            self.assertEqual('joe', turn['player'].name)
+            self.assertEqual('AI#1', turn['opponent'].name)
             self.assertEqual('interrogate', turn['action'])
             self.assertEqual(['L'], turn['range'].suits)
             self.assertEqual([3, 4, 5, 6, 7], turn['range'].ranks)
@@ -251,8 +252,8 @@ class MyTestCase(unittest.TestCase):
                              'Cards in this range: 3', output(out))
             turn = state.history.pop()
             self.assertEqual(10, turn['turn'])
-            self.assertEqual('joe', turn['player'])
-            self.assertEqual('AI#1', turn['opponent'])
+            self.assertEqual('joe', turn['player'].name)
+            self.assertEqual('AI#1', turn['opponent'].name)
             self.assertEqual('interrogate', turn['action'])
             self.assertEqual('3L->3L [suit]', str(turn['range']))
             self.assertEqual(3, turn['result'])
@@ -262,35 +263,51 @@ class MyTestCase(unittest.TestCase):
 
     def test_maxlength_by_column(self):
         data = [{'col1': 'hello', 'col2': 'a',      'col3': 4444,  'col4': 'z'},
-                {'col1': 'you',   'col2': 'column', 'col3': 55555, 'col4': 'zz'}]
+                {'col1': 'you',   'col2': 'column', 'col3': 55555, 'col4': HIDDEN}]
 
         self.assertEqual({'col1': 5, 'col2': 6, 'col3': 5, 'col4': 4}, maxlength_by_column(data))
 
     def test_print_tabular_data(self):
         data = [{'col1': 'hello', 'col2': 'a',      'col3': 4444,  'col4': 'z'},
-                {'col1': 'you',   'col2': 'column', 'col3': 55555, 'col4': 'zz'}]
+                {'col1': 'you',   'col2': 'column', 'col3': 55555, 'col4': HIDDEN}]
 
         with captured_output() as (out, err):
             print_tabular_data(data, ['col1', 'col3', 'col2', 'col4'])
 
         self.assertEqual('Col1   Col3   Col2    Col4\n'
                          'hello  4444   a       z   \n'
-                         'you    55555  column  zz',
+                         'you    55555  column  ****',
                          output(out))
 
     def test_print_history(self):
-        history = [{'turn': 1, 'player': 'Tom', 'opponent': 'Juan-Pedro', 'range': Range((1, 'L'), (5, 'L')), 'result': 2},
-                   {'turn': 2, 'player': 'Joe', 'opponent': 'Tom', 'range': Range((6, '$'), (6, '$'), choice='suit'), 'result': 0}]
+        tom = HumanPlayer('Tom')
+        juanpedro = HumanPlayer('Juan-Pedro')
+        joe = HumanPlayer('Joe')
+        history = [{'turn': 1, 'player': tom, 'opponent': juanpedro,
+                    'range': Range((1, 'L'), (5, 'L')), 'result': 2, 'action': 'interrogate'},
+                   {'turn': 2, 'player': joe, 'opponent': tom,
+                    'range': Range((6, '$'), (6, '$'), choice='suit'), 'result': 0, 'action': 'interrogate'},
+                   {'turn': 3, 'player': juanpedro, 'opponent': tom,
+                    'range': Range((3, 'L'), (3, 'H')), 'result': 1, 'action': 'secret'},
+                   {'turn': 4, 'player': tom, 'opponent': juanpedro,
+                    'range': Range((4, '$'), (7, '$')), 'result': 0, 'action': 'secret'},
+                   {'turn': 5, 'player': joe, 'opponent': tom,
+                    'range': Range((9, 'H'), (3, 'H')), 'result': 4, 'action': 'secret'}]
+
         state = GameState()
         state.history = history
+        state.current_player = juanpedro
 
         with captured_output() as (out, err):
             self.assertFalse(print_history(state))
 
         self.assertEqual('History\n'
-                         'Turn  Player  Opponent    Range          Result\n'
-                         '1     Tom     Juan-Pedro  1L->5L         2     \n'
-                         '2     Joe     Tom         6$->6$ [suit]  0',
+                         'Turn  Player      Opponent    Range          Result  Note    \n'
+                         '1     Tom         Juan-Pedro  1L->5L         2               \n'
+                         '2     Joe         Tom         6$->6$ [suit]  0               \n'
+                         '3     Juan-Pedro  Tom         3L->3H         1       (Secret)\n'
+                         '4     Tom         Juan-Pedro  4$->7$         0       (Secret)\n'
+                         '5     Joe         Tom         *************  ******  (Secret)',
                          output(out))
 
     def test_secret_asks_for_two_cards_puts_the_range_in_history_and_display_the_result(self):
@@ -315,8 +332,8 @@ class MyTestCase(unittest.TestCase):
                              'Cards in this range: 2', output(out))
             turn = state.history.pop()
             self.assertEqual(1, turn['turn'])
-            self.assertEqual('joe', turn['player'])
-            self.assertEqual('AI#1', turn['opponent'])
+            self.assertEqual('joe', turn['player'].name)
+            self.assertEqual('AI#1', turn['opponent'].name)
             self.assertEqual('secret', turn['action'])
             self.assertEqual(['L', 'H', '$'], turn['range'].suits)
             self.assertEqual([9, 1], turn['range'].ranks)
