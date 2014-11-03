@@ -1,6 +1,6 @@
 from random import shuffle
 
-from Deck import prepare_deck, deal_deck, format_hand, draw_question_cards
+from Deck import prepare_deck, deal_deck, format_hand, draw_question_cards, discard_question_cards
 from GameState import GameState
 from Player import HumanPlayer, AIPlayer
 from Interactive import ask_for, print_summary, print_low_suit, print_question_cards
@@ -51,6 +51,7 @@ def play_turn(game_state):
     print 'Turn {0} - {1}'.format(game_state.turn, game_state.current_player.name)
     print_question_cards(game_state)
     game_state.current_player.play_turn(game_state)
+    discard_question_cards(game_state.question_cards, game_state.discard_deck)
     game_state.turn += 1
 
 

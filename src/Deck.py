@@ -67,6 +67,11 @@ def draw_question_cards(interrogation_deck, discard_deck):
     return sorted(question_cards, key=hand_sorter)
 
 
+def discard_question_cards(question_cards, discard_deck):
+    discard_deck.extend(question_cards)
+    del question_cards[:]
+
+
 class Range(object):
     def __init__(self, low_card, high_card, choice=None):
         self.low_card = low_card
