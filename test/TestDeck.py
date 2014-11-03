@@ -1,6 +1,7 @@
 import unittest
 from Deck import prepare_deck, resolve_murder_card, deal_deck, calculate_rounds, format_card, format_hand, \
-    draw_question_cards, Range, parse_card
+    draw_question_cards, Range, parse_card, discard_question_cards
+from GameState import GameState
 from Player import HumanPlayer, AIPlayer
 
 
@@ -66,6 +67,14 @@ class TestDeck(unittest.TestCase):
         self.assertIn((4, 'L'), drawn_cards)
         self.assertEqual(0, len(discard_deck))
         self.assertEqual(1, len(interrogation_deck))
+
+    def test_discard_question_cards(self):
+        state = GameState()
+        state.question_cards = [(2, 'H'), (7, 'H'), (5, '$')]
+        state.discard_deck = []
+        discard_question_cards(state.question_cards, state.discard_deck)
+        self.assertEqual([(2, 'H'), (7, 'H'), (5, '$')], state.discard_deck)
+        self.assertEqual([], state.question_cards)
 
 
 class TestRange(unittest.TestCase):

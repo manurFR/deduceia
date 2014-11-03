@@ -3,7 +3,7 @@ from Deck import Range
 
 from GameState import GameState
 from Interactive import print_low_suit, print_secret, print_summary, ask_for, quit_command, interrogate_command, \
-    print_question_cards, choose_an_opponent, maxlength_by_column, print_tabular_data, print_history
+    print_question_cards, choose_an_opponent, maxlength_by_column, print_tabular_data, print_history, secret_command
 import Interactive
 from Player import HumanPlayer, AIPlayer
 from TestUtils import captured_output
@@ -228,6 +228,38 @@ class MyTestCase(unittest.TestCase):
         finally:
             Interactive.raw_input = old_raw_input
 
+    def test_interrogate_for_the_same_two_cards_asks_for_rank_or_suit(self):
+        try:
+            old_raw_input = raw_input
+            Interactive.raw_input = mock_raw_input('1', '3L', '3L', 'suit')  # opponent id, low card, high card
+
+            player = HumanPlayer('joe')
+            ai = AIPlayer(1)
+            ai._hand = [(1, 'L'), (3, 'L'), (6, 'L'), (2, 'H'), (8, '$'), (9, '$')]
+
+            state = GameState()
+            state.turn = 10
+            state.current_player = player
+            state.players = [player, ai]
+            state.question_cards = [(1, '$'), (3, 'L'), (3, 'L')]
+
+            with captured_output() as (out, err):
+                turn_ended = interrogate_command(state)
+
+            self.assertEqual('Interrogate\n'
+                             'Question cards: 1$ 3L 3L\n'
+                             'Cards in this range: 3', output(out))
+            turn = state.history.pop()
+            self.assertEqual(10, turn['turn'])
+            self.assertEqual('joe', turn['player'])
+            self.assertEqual('AI#1', turn['opponent'])
+            self.assertEqual('interrogate', turn['action'])
+            self.assertEqual('3L->3L [suit]', str(turn['range']))
+            self.assertEqual(3, turn['result'])
+            self.assertTrue(turn_ended)
+        finally:
+            Interactive.raw_input = old_raw_input
+
     def test_maxlength_by_column(self):
         data = [{'col1': 'hello', 'col2': 'a',      'col3': 4444,  'col4': 'z'},
                 {'col1': 'you',   'col2': 'column', 'col3': 55555, 'col4': 'zz'}]
@@ -260,6 +292,38 @@ class MyTestCase(unittest.TestCase):
                          '1     Tom     Juan-Pedro  1L->5L         2     \n'
                          '2     Joe     Tom         6$->6$ [suit]  0',
                          output(out))
+
+    def test_secret_asks_for_two_cards_puts_the_range_in_history_and_display_the_result(self):
+        try:
+            old_raw_input = raw_input
+            Interactive.raw_input = mock_raw_input('1', '9$', '1H')  # opponent id, low card, high card
+
+            player = HumanPlayer('joe')
+            ai = AIPlayer(1)
+            ai._hand = [(1, 'L'), (3, 'L'), (6, 'L'), (2, 'H'), (8, '$'), (9, '$')]
+
+            state = GameState()
+            state.turn = 1
+            state.current_player = player
+            state.players = [player, ai]
+            state.question_cards = [(1, 'L'), (3, 'L'), (7, 'L')]
+
+            with captured_output() as (out, err):
+                turn_ended = secret_command(state)
+
+            self.assertEqual('Secret\n'
+                             'Cards in this range: 2', output(out))
+            turn = state.history.pop()
+            self.assertEqual(1, turn['turn'])
+            self.assertEqual('joe', turn['player'])
+            self.assertEqual('AI#1', turn['opponent'])
+            self.assertEqual('secret', turn['action'])
+            self.assertEqual(['L', 'H', '$'], turn['range'].suits)
+            self.assertEqual([9, 1], turn['range'].ranks)
+            self.assertEqual(2, turn['result'])
+            self.assertTrue(turn_ended)
+        finally:
+            Interactive.raw_input = old_raw_input
 
 if __name__ == '__main__':
     unittest.main()

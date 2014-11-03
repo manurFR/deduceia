@@ -3,6 +3,8 @@ import sys
 
 from Deck import format_hand, format_card, Range, parse_card
 
+CANCEL = "**CANCEL**"
+
 
 def ask_for(prompt, wanted_type=unicode, allowed=[]):
     while True:
@@ -84,6 +86,17 @@ def choose_an_opponent(state):
     return opponents[chosen_id]
 
 
+def ask_for_a_card_or_cancel(label, allowed_cards=[]):
+    while True:
+        card = ask_for('Select {0} card (or \'cancel\'): '.format(label), unicode, allowed_cards)
+        if card == 'cancel':
+            return CANCEL
+        try:
+            return parse_card(card)
+        except AssertionError:  # string not parsable as a card
+            pass  # try again
+
+
 def interrogate_command(state):
     print
     print "Interrogate"
@@ -91,19 +104,51 @@ def interrogate_command(state):
     opponent = choose_an_opponent(state)
     allowed_cards = [format_card(card) for card in state.question_cards]
     allowed_cards.append('cancel')
-    low_card = ask_for('Select low card (or \'cancel\'): ', str, allowed_cards)
-    if low_card == 'cancel':
+    low_card = ask_for_a_card_or_cancel('low', allowed_cards)
+    if low_card == CANCEL:
         return False  # turn not ended
-    allowed_cards.remove(low_card)
-    high_card = ask_for('Select high card (or \'cancel\'): ', str, allowed_cards)
-    if high_card == 'cancel':
+    allowed_cards.remove(format_card(low_card))
+    high_card = ask_for_a_card_or_cancel('high', allowed_cards)
+    if high_card == CANCEL:
         return False  # turn not ended
-    card_range = Range(parse_card(low_card), parse_card(high_card))
+    choice = None
+    if low_card == high_card:
+        choice = ask_for('Identical cards. Choose rank or suit: ', str, ['rank', 'suit', 'cancel'])
+        if choice == 'cancel':
+            return False  # turn not ended
+    card_range = Range(low_card, high_card, choice=choice)
     result = opponent.cards_in_range(card_range)
     print "Cards in this range: {0}".format(result)
     state.history.append({'turn':      state.turn,
                           'player':    state.current_player.name,
                           'action':    'interrogate',
+                          'opponent':  opponent.name,
+                          'range':     card_range,
+                          'result':    result})
+    return True  # turn ended
+
+
+def secret_command(state):
+    print
+    print "Secret"
+    opponent = choose_an_opponent(state)
+    low_card = ask_for_a_card_or_cancel('low')
+    if low_card == CANCEL:
+        return False  # turn not ended
+    high_card = ask_for_a_card_or_cancel('high')
+    if high_card == CANCEL:
+        return False  # turn not ended
+    choice = None
+    if low_card == high_card:
+        choice = ask_for('Identical cards. Choose rank or suit: ', unicode, ['rank', 'suit', 'cancel'])
+        if choice == 'cancel':
+            return False  # turn not ended
+    card_range = Range(low_card, high_card, choice=choice)
+    result = opponent.cards_in_range(card_range)
+    print "Cards in this range: {0}".format(result)
+    state.history.append({'turn':      state.turn,
+                          'player':    state.current_player.name,
+                          'action':    'secret',
                           'opponent':  opponent.name,
                           'range':     card_range,
                           'result':    result})
