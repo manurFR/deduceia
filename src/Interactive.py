@@ -102,9 +102,37 @@ def interrogate_command(state):
     result = opponent.cards_in_range(card_range)
     print "Cards in this range: {0}".format(result)
     state.history.append({'turn':      state.turn,
-                          'player':    state.current_player,
+                          'player':    state.current_player.name,
                           'action':    'interrogate',
-                          'opponent':  opponent,
+                          'opponent':  opponent.name,
                           'range':     card_range,
                           'result':    result})
     return True  # turn ended
+
+
+def maxlength_by_column(data):
+    maxlength = {}
+    for row in data:
+        for key, value in row.iteritems():
+            # take the length of the key as the default minimum length since the key will displayed as the header
+            current_length = maxlength.get(key, len(key))
+            maxlength[key] = max(current_length, len(str(value)))
+    return maxlength
+
+
+def print_tabular_data(data, columns):
+    maxlengths = maxlength_by_column(data)
+    fmt_string = '  '.join('{' + column + ':<' + str(maxlengths[column]) + '}' for column in columns)
+    print fmt_string.format(**dict((header, header.capitalize()) for header in maxlengths.keys()))  # header line
+    for row in data:
+        print fmt_string.format(**row)
+
+
+def print_history(state):
+    print
+    if len(state.history) == 0:
+        print "No turns to display"
+        return
+    print "History"
+    print_tabular_data(state.history, ['turn', 'player', 'opponent', 'range', 'result'])
+    return False  # turn not ended

@@ -117,6 +117,10 @@ class TestRange(unittest.TestCase):
         with self.assertRaises(StopIteration):
             iterator.next()
 
+    def test_range_provides_a_readable_str(self):
+        self.assertEqual("3L->5$", str(Range((3, 'L'), (5, '$'))))
+        self.assertEqual("3L->3L [rank]", str(Range((3, 'L'), (3, 'L'), choice='rank')))
+
 
 
 if __name__ == '__main__':

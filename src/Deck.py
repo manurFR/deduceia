@@ -100,3 +100,9 @@ class Range(object):
 
     def __iter__(self):
         return iter((rank, suit) for rank in self.ranks for suit in self.suits)
+
+    def __str__(self):
+        return_str = '{0}->{1}'.format(format_card(self.low_card), format_card(self.high_card))
+        if self.identical_cards:
+            return_str += ' [{0}]'.format(self.choice)
+        return return_str

@@ -1,8 +1,9 @@
 import unittest
+from Deck import Range
 
 from GameState import GameState
 from Interactive import print_low_suit, print_secret, print_summary, ask_for, quit_command, interrogate_command, \
-    print_question_cards, choose_an_opponent
+    print_question_cards, choose_an_opponent, maxlength_by_column, print_tabular_data, print_history
 import Interactive
 from Player import HumanPlayer, AIPlayer
 from TestUtils import captured_output
@@ -24,6 +25,7 @@ def mock_raw_input(*inputs):
     global index_of_prompt
     index_of_prompt = 0
     return temp_raw_input
+
 
 # noinspection PyUnboundLocalVariable
 class MyTestCase(unittest.TestCase):
@@ -55,7 +57,6 @@ class MyTestCase(unittest.TestCase):
 
         self.assertEqual('Question cards: 3L 3H 6$', output(out))
 
-
     def test_print_summary_at_start(self):
         human = HumanPlayer('john')
         human._hand = [(3, 'L'), (5, 'H'), (9, '$')]
@@ -67,7 +68,9 @@ class MyTestCase(unittest.TestCase):
         with captured_output() as (out, err):
             print_summary(state)
 
-        self.assertEqual('Game Summary\nYour hand: 3L 5H 9$\nSecret to play: [john: 1]', output(out))
+        self.assertEqual('Game Summary\n'
+                         'Your hand: 3L 5H 9$\n'
+                         'Secret to play: [john: 1]', output(out))
 
     def test_print_summary_with_extra_card_and_low_suit(self):
         human = HumanPlayer('john')
@@ -83,7 +86,11 @@ class MyTestCase(unittest.TestCase):
             self.assertFalse(print_summary(state))
 
         self.assertEqual(
-            'Game Summary\nYour hand: 3L 5H 9$\nExtra card: 5L\nLow Suits: [john: H]\nSecret to play: [john: 1]',
+            'Game Summary\n'
+            'Your hand: 3L 5H 9$\n'
+            'Extra card: 5L\n'
+            'Low Suits: [john: H]\n'
+            'Secret to play: [john: 1]',
             output(out))
 
     def test_ask_for(self):
@@ -182,11 +189,13 @@ class MyTestCase(unittest.TestCase):
             with captured_output() as (out, err):
                 turn_ended = interrogate_command(state)
 
-            self.assertEqual('Interrogate\nQuestion cards: 1L 3L 7L\nCards in this range: 2', output(out))
+            self.assertEqual('Interrogate\n'
+                             'Question cards: 1L 3L 7L\n'
+                             'Cards in this range: 2', output(out))
             turn = state.history.pop()
             self.assertEqual(10, turn['turn'])
-            self.assertEqual(player, turn['player'])
-            self.assertEqual(ai, turn['opponent'])
+            self.assertEqual('joe', turn['player'])
+            self.assertEqual('AI#1', turn['opponent'])
             self.assertEqual('interrogate', turn['action'])
             self.assertEqual(['L'], turn['range'].suits)
             self.assertEqual([3, 4, 5, 6, 7], turn['range'].ranks)
@@ -212,12 +221,45 @@ class MyTestCase(unittest.TestCase):
             with captured_output() as (out, err):
                 turn_ended = interrogate_command(state)
 
-            self.assertEqual('Interrogate\nQuestion cards: 1L 3L 7L', output(out))
+            self.assertEqual('Interrogate\n'
+                             'Question cards: 1L 3L 7L', output(out))
             self.assertEqual(0, len(state.history))
             self.assertFalse(turn_ended)
         finally:
             Interactive.raw_input = old_raw_input
 
+    def test_maxlength_by_column(self):
+        data = [{'col1': 'hello', 'col2': 'a',      'col3': 4444,  'col4': 'z'},
+                {'col1': 'you',   'col2': 'column', 'col3': 55555, 'col4': 'zz'}]
+
+        self.assertEqual({'col1': 5, 'col2': 6, 'col3': 5, 'col4': 4}, maxlength_by_column(data))
+
+    def test_print_tabular_data(self):
+        data = [{'col1': 'hello', 'col2': 'a',      'col3': 4444,  'col4': 'z'},
+                {'col1': 'you',   'col2': 'column', 'col3': 55555, 'col4': 'zz'}]
+
+        with captured_output() as (out, err):
+            print_tabular_data(data, ['col1', 'col3', 'col2', 'col4'])
+
+        self.assertEqual('Col1   Col3   Col2    Col4\n'
+                         'hello  4444   a       z   \n'
+                         'you    55555  column  zz',
+                         output(out))
+
+    def test_print_history(self):
+        history = [{'turn': 1, 'player': 'Tom', 'opponent': 'Juan-Pedro', 'range': Range((1, 'L'), (5, 'L')), 'result': 2},
+                   {'turn': 2, 'player': 'Joe', 'opponent': 'Tom', 'range': Range((6, '$'), (6, '$'), choice='suit'), 'result': 0}]
+        state = GameState()
+        state.history = history
+
+        with captured_output() as (out, err):
+            self.assertFalse(print_history(state))
+
+        self.assertEqual('History\n'
+                         'Turn  Player  Opponent    Range          Result\n'
+                         '1     Tom     Juan-Pedro  1L->5L         2     \n'
+                         '2     Joe     Tom         6$->6$ [suit]  0',
+                         output(out))
 
 if __name__ == '__main__':
     unittest.main()
