@@ -1,6 +1,6 @@
 import unittest
 from Deck import prepare_deck, resolve_murder_card, deal_deck, calculate_rounds, format_card, format_hand, \
-    draw_question_cards, Range, parse_card, discard_question_cards
+    draw_question_cards, Range, parse_card, discard_question_cards, next_card
 from GameState import GameState
 from Player import HumanPlayer, AIPlayer
 
@@ -21,6 +21,12 @@ class TestDeck(unittest.TestCase):
     def test_resolve_murder_card_determine_suit(self):
         self.assertEqual('$', resolve_murder_card((1, '$'), (7, '$'))[1])
         self.assertEqual('$', resolve_murder_card((8, 'L'), (9, 'H'))[1])
+
+    def test_next_card_for_a_regular_card(self):
+        self.assertEqual((3, 'H'), next_card((2, 'H')))
+
+    def test_next_card_for_a_nine(self):
+        self.assertEqual((1, '$'), next_card((9, '$')))
 
     def test_deal_deck(self):
         players = [HumanPlayer('test'), AIPlayer(1)]
@@ -129,7 +135,6 @@ class TestRange(unittest.TestCase):
     def test_range_provides_a_readable_str(self):
         self.assertEqual("3L->5$", str(Range((3, 'L'), (5, '$'))))
         self.assertEqual("3L->3L [rank]", str(Range((3, 'L'), (3, 'L'), choice='rank')))
-
 
 
 if __name__ == '__main__':

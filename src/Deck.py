@@ -21,6 +21,13 @@ def resolve_murder_card(evidence1, evidence2):
     return rank, suit
 
 
+def next_card(card):
+    if card[0] == RANKS[-1]:
+        return RANKS[0], card[1]
+    else:
+        return card[0]+1, card[1]
+
+
 def calculate_rounds(deck, players):
     return len(deck) / len(players)
 

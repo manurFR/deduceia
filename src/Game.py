@@ -1,12 +1,10 @@
 from random import shuffle
 
-from Deck import prepare_deck, deal_deck, format_hand, draw_question_cards, discard_question_cards
+from Deck import prepare_deck, deal_deck, draw_question_cards, discard_question_cards, resolve_murder_card, \
+    next_card
 from GameState import GameState
 from Player import HumanPlayer, AIPlayer
 from Interactive import ask_for, print_summary, print_low_suit, print_question_cards
-
-
-state = GameState()
 
 
 def prepare_game_deck(nb_decks):
@@ -26,8 +24,8 @@ def prepare_players(nb, player_name):
     return list_players, human
 
 
-def determine_low_suit():
-    for player in players:
+def determine_low_suit(state):
+    for player in state.players:
         lowest_suits = player.lowest_suits()
         if len(lowest_suits) == 1:
             player.set_low_suit(lowest_suits[0])
@@ -39,27 +37,39 @@ def determine_low_suit():
             player.choose_low_suit(lowest_suits)
 
 
-def play_turn(game_state):
-    id_current_player = game_state.turn % len(players)
-    game_state.current_player = players[id_current_player]
+def determine_murderer(state, accusation_cards):
+    possible_murder_card = resolve_murder_card(*accusation_cards)
+    while possible_murder_card in state.current_player.hand or possible_murder_card == state.extra_card:
+        possible_murder_card = next_card(possible_murder_card)
+    for player in state.players:
+        if possible_murder_card in player.hand:
+            return player
+    raise ValueError  # one should not arrive here
+
+
+def play_turn(state):
+    id_current_player = state.turn % len(state.players)
+    state.current_player = state.players[id_current_player]
     other_players = []
-    for i in range(1, len(players)):
-        other_players.append(players[(id_current_player + i) % len(players)])
+    for i in range(1, len(state.players)):
+        other_players.append(state.players[(id_current_player + i) % len(state.players)])
 
-    game_state.question_cards = draw_question_cards(game_state.interrogation_deck, game_state.discard_deck)
+    state.question_cards = draw_question_cards(state.interrogation_deck, state.discard_deck)
     print
-    print 'Turn {0} - {1}'.format(game_state.turn, game_state.current_player.name)
-    print_question_cards(game_state)
-    game_state.current_player.play_turn(game_state)
-    discard_question_cards(game_state.question_cards, game_state.discard_deck)
-    game_state.turn += 1
+    print 'Turn {0} - {1}'.format(state.turn, state.current_player.name)
+    print_question_cards(state)
+    state.current_player.play_turn(state)
+    discard_question_cards(state.question_cards, state.discard_deck)
+    state.turn += 1
 
 
-if __name__ == '__main__':
+def main():
     print 'Welcome to Deduce or Die! IA'
     print
     nb_players = ask_for('Number of players : ', int, ['3', '4', '5', '6'])
     human_player_name = ask_for('Type your name : ')
+
+    state = GameState()
 
     players, state.human_player = prepare_players(nb_players, human_player_name)
     state.players = players
@@ -82,10 +92,14 @@ if __name__ == '__main__':
 
     print_summary(state)
 
-    determine_low_suit()
+    determine_low_suit(state)
     print
     print_low_suit(players)
 
     state.turn = 1
     while True:
         play_turn(state)
+
+
+if __name__ == '__main__':
+    main()
