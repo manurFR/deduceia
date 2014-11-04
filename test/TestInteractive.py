@@ -4,7 +4,7 @@ from Deck import Range
 from GameState import GameState
 from Interactive import print_low_suit, print_secret, print_summary, ask_for, quit_command, interrogate_command, \
     print_question_cards, choose_an_opponent, maxlength_by_column, print_tabular_data, print_history, secret_command, \
-    HIDDEN
+    HIDDEN, accuse_command
 import Interactive
 from Player import HumanPlayer, AIPlayer
 from TestUtils import captured_output
@@ -342,5 +342,94 @@ class MyTestCase(unittest.TestCase):
         finally:
             Interactive.raw_input = old_raw_input
 
+    def test_accuse_good_guess(self):
+        try:
+            old_raw_input = raw_input
+            Interactive.raw_input = mock_raw_input('1', '5L', '5$')  # opponent id, first card, second card
+
+            joe = HumanPlayer('joe')
+            joe._hand = [(4, 'L'), (8, 'L'), (5, 'H'), (8, 'H')]
+            ai = AIPlayer(1)
+            ai._hand = [(1, 'L'), (3, 'L'), (1, 'H'), (9, '$')]
+
+            state = GameState()
+            state.turn = 23
+            state.current_player = joe
+            state.players = [joe, ai]
+            state.evidence_cards = [(5, '$'), (5, 'L')]
+
+            with captured_output() as (out, err):
+                self.assertTrue(accuse_command(state))
+
+            self.assertEqual('Accuse\n\n'
+                             'Your guess is: Correct', output(out))
+            turn = state.history.pop()
+            self.assertEqual(23, turn['turn'])
+            self.assertEqual('joe', turn['player'].name)
+            self.assertEqual('AI#1', turn['opponent'].name)
+            self.assertEqual('accuse', turn['action'])
+            self.assertEqual([(5, 'L'), (5, '$')], turn['accusation'])
+            self.assertEqual('correct', turn['outcome'])
+        finally:
+            Interactive.raw_input = old_raw_input
+
+    def test_accuse_bad_guess_of_cards(self):
+        try:
+            old_raw_input = raw_input
+            Interactive.raw_input = mock_raw_input('1', '1L', '2L')  # opponent id, first card, second card
+
+            joe = HumanPlayer('joe')
+            joe._hand = [(4, 'L'), (8, 'L'), (5, 'H'), (8, 'H')]
+            ai = AIPlayer(1)
+            ai._hand = [(1, 'L'), (3, 'L'), (1, 'H'), (9, '$')]
+
+            state = GameState()
+            state.turn = 23
+            state.current_player = joe
+            state.players = [joe, ai]
+            state.evidence_cards = [(5, '$'), (5, 'L')]
+
+            with captured_output() as (out, err):
+                self.assertTrue(accuse_command(state))
+
+            self.assertEqual('Accuse\n\n'
+                             'Your guess is: Incorrect', output(out))
+            turn = state.history.pop()
+            self.assertEqual(23, turn['turn'])
+            self.assertEqual('joe', turn['player'].name)
+            self.assertEqual('AI#1', turn['opponent'].name)
+            self.assertEqual('accuse', turn['action'])
+            self.assertEqual([(1, 'L'), (2, 'L')], turn['accusation'])
+            self.assertEqual('incorrect', turn['outcome'])
+        finally:
+            Interactive.raw_input = old_raw_input
+
+    def test_accuse_bad_guess_of_murderer(self):
+        try:
+            old_raw_input = raw_input
+            Interactive.raw_input = mock_raw_input('1', '3L', '5L')  # opponent id, first card, second card
+
+            joe = HumanPlayer('joe')
+            joe._hand = [(4, 'L'), (7, 'L'), (5, 'H'), (8, 'H')]
+            ai1 = AIPlayer(1)
+            ai1._hand = [(1, 'L'), (3, 'L'), (1, 'H'), (9, '$')]
+            ai2 = AIPlayer(2)
+            ai2._hand = [(8, 'L'), (3, 'H'), (2, '$'), (3, '$')]
+
+            state = GameState()
+            state.turn = 23
+            state.current_player = joe
+            state.players = [joe, ai1, ai2]
+            state.evidence_cards = [(3, 'L'), (5, 'L')]
+
+            with captured_output() as (out, err):
+                self.assertTrue(accuse_command(state))
+
+            self.assertEqual('Accuse\n\n'
+                             'Your guess is: Incorrect', output(out))
+        finally:
+            Interactive.raw_input = old_raw_input
+
 if __name__ == '__main__':
     unittest.main()
+

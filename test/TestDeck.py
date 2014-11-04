@@ -1,6 +1,6 @@
 import unittest
 from Deck import prepare_deck, resolve_murder_card, deal_deck, calculate_rounds, format_card, format_hand, \
-    draw_question_cards, Range, parse_card, discard_question_cards, next_card
+    draw_question_cards, Range, parse_card, discard_question_cards, next_card, determine_murderer
 from GameState import GameState
 from Player import HumanPlayer, AIPlayer
 
@@ -81,6 +81,54 @@ class TestDeck(unittest.TestCase):
         discard_question_cards(state.question_cards, state.discard_deck)
         self.assertEqual([(2, 'H'), (7, 'H'), (5, '$')], state.discard_deck)
         self.assertEqual([], state.question_cards)
+
+    def test_determine_murderer_when_its_another_player(self):
+        state = GameState()
+        john = HumanPlayer('john')
+        ai1 = AIPlayer(1)
+        ai2 = AIPlayer(2)
+        state.current_player = john
+        state.players = [john, ai1, ai2]
+        state.extra_card = (8, 'L')
+
+        john._hand = [(5, 'L'), (9, 'H'), (6, '$')]
+        ai1._hand = [(4, 'L'), (7, 'L'), (3, '$')]
+        ai2._hand = [(1, 'L'), (3, 'H'), (5, '$')]
+
+        accusation_cards = [(5, 'L'), (7, '$')]  # => murder card = 3H
+        self.assertEqual(ai2, determine_murderer(state, accusation_cards))
+
+    def test_determine_murderer_when_its_the_extra_card_and_the_next_is_the_current_player(self):
+        state = GameState()
+        john = HumanPlayer('john')
+        ai1 = AIPlayer(1)
+        ai2 = AIPlayer(2)
+        state.current_player = john
+        state.players = [john, ai1, ai2]
+        state.extra_card = (4, 'L')
+
+        john._hand = [(5, 'L'), (9, 'H'), (6, '$')]
+        ai1._hand = [(4, 'L'), (6, 'L'), (3, '$')]
+        ai2._hand = [(1, 'L'), (3, 'H'), (5, '$')]
+
+        accusation_cards = [(1, 'L'), (3, 'L')]  # => murder card = 4L
+        self.assertEqual(ai1, determine_murderer(state, accusation_cards))
+
+    def test_determine_murderer_when_there_is_no_extra_card(self):
+        state = GameState()
+        john = HumanPlayer('john')
+        ai1 = AIPlayer(1)
+        ai2 = AIPlayer(2)
+        state.current_player = john
+        state.players = [john, ai1, ai2]
+        state.extra_card = None
+
+        john._hand = [(5, 'L'), (9, 'H'), (6, '$')]
+        ai1._hand = [(4, 'L'), (7, 'L'), (3, '$')]
+        ai2._hand = [(1, 'L'), (3, 'H'), (5, '$')]
+
+        accusation_cards = [(5, 'L'), (7, '$')]  # => murder card = 3H
+        self.assertEqual(ai2, determine_murderer(state, accusation_cards))
 
 
 class TestRange(unittest.TestCase):

@@ -79,7 +79,19 @@ def discard_question_cards(question_cards, discard_deck):
     del question_cards[:]
 
 
+def determine_murderer(state, accusation_cards):
+    possible_murder_card = resolve_murder_card(*accusation_cards)
+    while possible_murder_card in state.current_player.hand or possible_murder_card == state.extra_card:
+        possible_murder_card = next_card(possible_murder_card)
+    for player in state.players:
+        if possible_murder_card in player.hand:
+            return player
+    raise ValueError  # one should not arrive here
+
+
 class Range(object):
+
+
     def __init__(self, low_card, high_card, choice=None):
         self.low_card = low_card
         self.high_card = high_card
@@ -112,9 +124,11 @@ class Range(object):
 
     def __iter__(self):
         return iter((rank, suit) for rank in self.ranks for suit in self.suits)
-
     def __str__(self):
         return_str = '{0}->{1}'.format(format_card(self.low_card), format_card(self.high_card))
         if self.identical_cards:
             return_str += ' [{0}]'.format(self.choice)
         return return_str
+
+
+

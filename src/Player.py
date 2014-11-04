@@ -1,14 +1,14 @@
 from random import choice
 from Deck import hand_sorter, SUITS
 from Interactive import ask_for, help_command, quit_command, print_summary, interrogate_command, print_history, \
-    secret_command
+    secret_command, accuse_command
 
 COMMANDS = {'h': help_command,
             'r': print_summary,
             't': print_history,
             'i': interrogate_command,
             's': secret_command,
-            'a': None,  # accuse
+            'a': accuse_command,
             'q': quit_command}
 
 

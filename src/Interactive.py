@@ -1,7 +1,8 @@
 from collections import OrderedDict
 import sys
 
-from Deck import format_hand, format_card, Range, parse_card
+from Deck import format_hand, format_card, Range, parse_card, determine_murderer
+
 
 CANCEL = "**CANCEL**"
 HIDDEN = "**HIDDEN**"
@@ -14,6 +15,17 @@ def ask_for(prompt, wanted_type=unicode, allowed=[]):
             print '> Invalid answer (allowed : {0})'.format('/'.join(allowed))
         else:
             return wanted_type(response)
+
+
+def ask_for_a_card_or_cancel(label, allowed_cards=[]):
+    while True:
+        card = ask_for('Select {0} card (or \'cancel\'): '.format(label), unicode, allowed_cards)
+        if card == 'cancel':
+            return CANCEL
+        try:
+            return parse_card(card)
+        except AssertionError:  # string not parsable as a card
+            pass  # try again
 
 
 def help_command(_):
@@ -85,17 +97,6 @@ def choose_an_opponent(state):
                         int, allowed)
 
     return opponents[chosen_id]
-
-
-def ask_for_a_card_or_cancel(label, allowed_cards=[]):
-    while True:
-        card = ask_for('Select {0} card (or \'cancel\'): '.format(label), unicode, allowed_cards)
-        if card == 'cancel':
-            return CANCEL
-        try:
-            return parse_card(card)
-        except AssertionError:  # string not parsable as a card
-            pass  # try again
 
 
 def interrogate_command(state):
@@ -213,3 +214,32 @@ def print_history(state):
     print "History"
     print_tabular_data(data, ['turn', 'player', 'opponent', 'range', 'result', 'note'])
     return False  # turn not ended
+
+
+def accuse_command(state):
+    print
+    print "Accuse"
+    opponent = choose_an_opponent(state)
+    first_card = ask_for_a_card_or_cancel('the first')
+    if first_card == CANCEL:
+        return False  # turn not ended
+    second_card = ask_for_a_card_or_cancel('the second')
+    if second_card == CANCEL:
+        return False  # turn not ended
+    print
+    accusation_cards = [first_card, second_card]
+    player_to_accuse = determine_murderer(state, accusation_cards)
+    if opponent == player_to_accuse and sorted(accusation_cards) == sorted(state.evidence_cards):
+        outcome = 'correct'
+    else:
+        outcome = 'incorrect'
+    print 'Your guess is: {0}'.format(outcome.capitalize())
+    state.history.append({'turn':       state.turn,
+                          'player':     state.current_player,
+                          'action':     'accuse',
+                          'opponent':   opponent,
+                          'accusation': accusation_cards,
+                          'outcome':    outcome})
+
+
+    return True  # turn ended

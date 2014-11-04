@@ -1,7 +1,6 @@
 from random import shuffle
 
-from Deck import prepare_deck, deal_deck, draw_question_cards, discard_question_cards, resolve_murder_card, \
-    next_card
+from Deck import prepare_deck, deal_deck, draw_question_cards, discard_question_cards
 from GameState import GameState
 from Player import HumanPlayer, AIPlayer
 from Interactive import ask_for, print_summary, print_low_suit, print_question_cards
@@ -35,16 +34,6 @@ def determine_low_suit(state):
             player.set_low_suit(low_suit)
         else:
             player.choose_low_suit(lowest_suits)
-
-
-def determine_murderer(state, accusation_cards):
-    possible_murder_card = resolve_murder_card(*accusation_cards)
-    while possible_murder_card in state.current_player.hand or possible_murder_card == state.extra_card:
-        possible_murder_card = next_card(possible_murder_card)
-    for player in state.players:
-        if possible_murder_card in player.hand:
-            return player
-    raise ValueError  # one should not arrive here
 
 
 def play_turn(state):
