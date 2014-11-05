@@ -265,18 +265,35 @@ class MyTestCase(unittest.TestCase):
         data = [{'col1': 'hello', 'col2': 'a',      'col3': 4444,  'col4': 'z'},
                 {'col1': 'you',   'col2': 'column', 'col3': 55555, 'col4': HIDDEN}]
 
-        self.assertEqual({'col1': 5, 'col2': 6, 'col3': 5, 'col4': 4}, maxlength_by_column(data))
+        self.assertEqual([('col1', 5), ('col2', 6), ('col3', 5), ('col4', 4)], maxlength_by_column(data))
+
+    def test_maxlength_by_column_no_headers(self):
+        data = [{'header1': 'hello', 'header2': 'a'},
+                {'header1': 'you',   'header2': 'column'}]
+
+        self.assertEqual({'header1': 5, 'header2': 6}, maxlength_by_column(data, headers=False))
 
     def test_print_tabular_data(self):
         data = [{'col1': 'hello', 'col2': 'a',      'col3': 4444,  'col4': 'z'},
                 {'col1': 'you',   'col2': 'column', 'col3': 55555, 'col4': HIDDEN}]
 
         with captured_output() as (out, err):
-            print_tabular_data(data, ['col1', 'col3', 'col2', 'col4'])
+            print_tabular_data(data, [('col1', 5), ('col3', 5), ('col2', 6), ('col4', 4)])
 
         self.assertEqual('Col1   Col3   Col2    Col4\n'
                          'hello  4444   a       z   \n'
                          'you    55555  column  ****',
+                         output(out))
+
+    def test_print_tabular_data_no_header(self):
+        data = [{'header1': 'hello', 'header2': 'a'},
+                {'header1': 'you',   'header2': 'column'}]
+
+        with captured_output() as (out, err):
+            print_tabular_data(data, [('header1', 5), ('header2', 6)], headers=False)
+
+        self.assertEqual('hello  a     \n'
+                         'you    column',
                          output(out))
 
     def test_print_history(self):
@@ -293,9 +310,12 @@ class MyTestCase(unittest.TestCase):
                     'range': Range((4, '$'), (7, '$')), 'result': 0, 'action': 'secret'},
                    {'turn': 5, 'player': joe, 'opponent': tom,
                     'range': Range((9, 'H'), (3, 'H')), 'result': 4, 'action': 'secret'}]
+        accusations = [{'player': tom, 'accused': juanpedro, 'cards': [(8, 'H'), (3, '$')], 'outcome': 'incorrect'},
+                       {'player': juanpedro, 'accused': joe, 'cards': [(7, 'H'), (5, '$')], 'outcome': 'correct'}]
 
         state = GameState()
         state.history = history
+        state.accusations = accusations
         state.current_player = juanpedro
 
         with captured_output() as (out, err):
@@ -307,7 +327,11 @@ class MyTestCase(unittest.TestCase):
                          '2     Joe         Tom         6$->6$ [suit]  0               \n'
                          '3     Juan-Pedro  Tom         3L->3H         1       (Secret)\n'
                          '4     Tom         Juan-Pedro  4$->7$         0       (Secret)\n'
-                         '5     Joe         Tom         *************  ******  (Secret)',
+                         '5     Joe         Tom         *************  ******  (Secret)\n'
+                         '\n'
+                         'Accusations\n'
+                         '      Tom         Juan-Pedro  8H 3$  incorrect\n'
+                         '      Juan-Pedro  Joe         7H 5$  correct',
                          output(out))
 
     def test_secret_asks_for_two_cards_puts_the_range_in_history_and_display_the_result(self):
@@ -363,13 +387,11 @@ class MyTestCase(unittest.TestCase):
 
             self.assertEqual('Accuse\n\n'
                              'Your guess is: Correct', output(out))
-            turn = state.history.pop()
-            self.assertEqual(23, turn['turn'])
-            self.assertEqual('joe', turn['player'].name)
-            self.assertEqual('AI#1', turn['opponent'].name)
-            self.assertEqual('accuse', turn['action'])
-            self.assertEqual([(5, 'L'), (5, '$')], turn['accusation'])
-            self.assertEqual('correct', turn['outcome'])
+            accusation = state.accusations.pop()
+            self.assertEqual('joe', accusation['player'].name)
+            self.assertEqual('AI#1', accusation['accused'].name)
+            self.assertEqual([(5, 'L'), (5, '$')], accusation['cards'])
+            self.assertEqual('correct', accusation['outcome'])
         finally:
             Interactive.raw_input = old_raw_input
 
@@ -394,13 +416,11 @@ class MyTestCase(unittest.TestCase):
 
             self.assertEqual('Accuse\n\n'
                              'Your guess is: Incorrect', output(out))
-            turn = state.history.pop()
-            self.assertEqual(23, turn['turn'])
-            self.assertEqual('joe', turn['player'].name)
-            self.assertEqual('AI#1', turn['opponent'].name)
-            self.assertEqual('accuse', turn['action'])
-            self.assertEqual([(1, 'L'), (2, 'L')], turn['accusation'])
-            self.assertEqual('incorrect', turn['outcome'])
+            accusation = state.accusations.pop()
+            self.assertEqual('joe', accusation['player'].name)
+            self.assertEqual('AI#1', accusation['accused'].name)
+            self.assertEqual([(1, 'L'), (2, 'L')], accusation['cards'])
+            self.assertEqual('incorrect', accusation['outcome'])
         finally:
             Interactive.raw_input = old_raw_input
 

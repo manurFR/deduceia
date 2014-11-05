@@ -13,3 +13,4 @@ class GameState(object):
         self.question_cards = []
 
         self.history = []
+        self.accusations = []

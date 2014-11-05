@@ -157,25 +157,31 @@ def secret_command(state):
     return True  # turn ended
 
 
-def maxlength_by_column(data):
+def maxlength_by_column(data, headers=True):
     maxlength = {}
     for row in data:
         for key, value in row.iteritems():
             if value != HIDDEN:
-                # take the length of the key as the default minimum length since the key will displayed as the header
-                current_length = maxlength.get(key, len(key))
+                if key in maxlength:
+                    current_length = maxlength[key]
+                else:
+                    if headers:
+                        # length of the key as the default minimum length since the key will displayed as the header
+                        current_length = len(key)
+                    else:
+                        current_length = 0
                 maxlength[key] = max(current_length, len(str(value)))
-    return maxlength
+    return zip(maxlength.keys(), maxlength.values())
 
 
-def print_tabular_data(data, columns):
-    maxlengths = maxlength_by_column(data)
-    fmt_string = '  '.join('{' + column + ':<' + str(maxlengths[column]) + '}' for column in columns)
-    print fmt_string.format(**dict((header, header.capitalize()) for header in maxlengths.keys()))  # header line
+def print_tabular_data(data, columns, headers=True):
+    fmt_string = '  '.join('{' + column + ':<' + str(maxlength) + '}' for column, maxlength in columns)
+    if headers:
+        print fmt_string.format(**dict((header, header.capitalize()) for header, _ in columns))  # header line
     for row in data:
         for key, value in row.iteritems():
             if value == HIDDEN:
-                row[key] = '*' * maxlengths[key]
+                row[key] = '*' * dict(columns)[key]
         print fmt_string.format(**row)
 
 
@@ -211,8 +217,20 @@ def print_history(state):
                              'result':   HIDDEN,
                              'note':     '(Secret)'})
 
+    accusations = []
+    for row in state.accusations:
+        accusations.append({'fill':    '    ',
+                            'player':  row['player'].name,
+                            'accused': row['accused'].name,
+                            'cards':   ' '.join(format_card(card) for card in row['cards']),
+                            'result':  row['outcome']})
+
     print "History"
     print_tabular_data(data, ['turn', 'player', 'opponent', 'range', 'result', 'note'])
+    print
+    print "Accusations"
+    print_tabular_data(accusations, ['fill', 'player', 'accused', 'cards', 'result'], headers=False)
+
     return False  # turn not ended
 
 
@@ -234,12 +252,10 @@ def accuse_command(state):
     else:
         outcome = 'incorrect'
     print 'Your guess is: {0}'.format(outcome.capitalize())
-    state.history.append({'turn':       state.turn,
-                          'player':     state.current_player,
-                          'action':     'accuse',
-                          'opponent':   opponent,
-                          'accusation': accusation_cards,
-                          'outcome':    outcome})
+    state.accusations.append({'player':   state.current_player,
+                              'accused':  opponent,
+                              'cards':    accusation_cards,
+                              'outcome':  outcome})
 
 
     return True  # turn ended
