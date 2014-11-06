@@ -262,23 +262,23 @@ class MyTestCase(unittest.TestCase):
             Interactive.raw_input = old_raw_input
 
     def test_maxlength_by_column(self):
-        data = [{'col1': 'hello', 'col2': 'a',      'col3': 4444,  'col4': 'z'},
-                {'col1': 'you',   'col2': 'column', 'col3': 55555, 'col4': HIDDEN}]
+        data = [{'col1': 'hello', 'col2': 'a',      'col3': 4444,  'col4': 'z',    'col5': 'abcd'},
+                {'col1': 'you',   'col2': 'column', 'col3': 55555, 'col4': HIDDEN, 'col5': 'efg'}]
 
-        self.assertEqual([('col1', 5), ('col2', 6), ('col3', 5), ('col4', 4)], maxlength_by_column(data))
+        self.assertEqual([5, 5, 6, 4], maxlength_by_column(data, ['col1', 'col3', 'col2', 'col4']))
 
     def test_maxlength_by_column_no_headers(self):
         data = [{'header1': 'hello', 'header2': 'a'},
                 {'header1': 'you',   'header2': 'column'}]
 
-        self.assertEqual({'header1': 5, 'header2': 6}, maxlength_by_column(data, headers=False))
+        self.assertEqual([5, 6], maxlength_by_column(data, ['header1', 'header2'], headers=False))
 
     def test_print_tabular_data(self):
         data = [{'col1': 'hello', 'col2': 'a',      'col3': 4444,  'col4': 'z'},
                 {'col1': 'you',   'col2': 'column', 'col3': 55555, 'col4': HIDDEN}]
 
         with captured_output() as (out, err):
-            print_tabular_data(data, [('col1', 5), ('col3', 5), ('col2', 6), ('col4', 4)])
+            print_tabular_data(data, ['col1', 'col3', 'col2', 'col4'], [5, 5,6, 4])
 
         self.assertEqual('Col1   Col3   Col2    Col4\n'
                          'hello  4444   a       z   \n'
@@ -290,7 +290,7 @@ class MyTestCase(unittest.TestCase):
                 {'header1': 'you',   'header2': 'column'}]
 
         with captured_output() as (out, err):
-            print_tabular_data(data, [('header1', 5), ('header2', 6)], headers=False)
+            print_tabular_data(data, ['header1', 'header2'], [5, 6], headers=False)
 
         self.assertEqual('hello  a     \n'
                          'you    column',
@@ -330,8 +330,8 @@ class MyTestCase(unittest.TestCase):
                          '5     Joe         Tom         *************  ******  (Secret)\n'
                          '\n'
                          'Accusations\n'
-                         '      Tom         Juan-Pedro  8H 3$  incorrect\n'
-                         '      Juan-Pedro  Joe         7H 5$  correct',
+                         '      Tom         Juan-Pedro  8H 3$          incorrect\n'
+                         '      Juan-Pedro  Joe         7H 5$          correct',
                          output(out))
 
     def test_secret_asks_for_two_cards_puts_the_range_in_history_and_display_the_result(self):

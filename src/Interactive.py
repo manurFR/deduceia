@@ -157,31 +157,31 @@ def secret_command(state):
     return True  # turn ended
 
 
-def maxlength_by_column(data, headers=True):
-    maxlength = {}
+def maxlength_by_column(data, columns, headers=True):
+    if headers:
+        # the default minimum length is the length of the key since it will be displayed as the header
+        maxlength = OrderedDict((column, len(column)) for column in columns)
+    else:
+        maxlength = OrderedDict.fromkeys(columns, 0)
+
     for row in data:
         for key, value in row.iteritems():
-            if value != HIDDEN:
-                if key in maxlength:
-                    current_length = maxlength[key]
-                else:
-                    if headers:
-                        # length of the key as the default minimum length since the key will displayed as the header
-                        current_length = len(key)
-                    else:
-                        current_length = 0
-                maxlength[key] = max(current_length, len(str(value)))
-    return zip(maxlength.keys(), maxlength.values())
+            if key in maxlength and value != HIDDEN:
+                maxlength[key] = max(maxlength[key], len(str(value)))
+
+    # returns [length1, length2] in the same order ['key1', 'key2', ...] as input argument 'columns'
+    return maxlength.values()
 
 
-def print_tabular_data(data, columns, headers=True):
-    fmt_string = '  '.join('{' + column + ':<' + str(maxlength) + '}' for column, maxlength in columns)
+def print_tabular_data(data, columns, maxlength, headers=True):
+    assert len(columns) == len(maxlength)
+    fmt_string = '  '.join('{' + column + ':<' + str(length) + '}' for column, length in zip(columns, maxlength))
     if headers:
-        print fmt_string.format(**dict((header, header.capitalize()) for header, _ in columns))  # header line
+        print fmt_string.format(**dict((header, header.capitalize()) for header in columns))  # header line
     for row in data:
         for key, value in row.iteritems():
             if value == HIDDEN:
-                row[key] = '*' * dict(columns)[key]
+                row[key] = '*' * maxlength[columns.index(key)]
         print fmt_string.format(**row)
 
 
@@ -225,11 +225,15 @@ def print_history(state):
                             'cards':   ' '.join(format_card(card) for card in row['cards']),
                             'result':  row['outcome']})
 
+    columns = ['turn', 'player', 'opponent', 'range', 'result', 'note']
+
     print "History"
-    print_tabular_data(data, ['turn', 'player', 'opponent', 'range', 'result', 'note'])
+    maxlength = maxlength_by_column(data, columns)
+    print_tabular_data(data, columns, maxlength)
     print
     print "Accusations"
-    print_tabular_data(accusations, ['fill', 'player', 'accused', 'cards', 'result'], headers=False)
+    maxlength.pop()  # remove the last length (for 'note') that we don't use
+    print_tabular_data(accusations, ['fill', 'player', 'accused', 'cards', 'result'], maxlength, headers=False)
 
     return False  # turn not ended
 
