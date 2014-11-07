@@ -1,5 +1,5 @@
 from random import choice
-from Deck import hand_sorter, SUITS
+from Deck import hand_sorter, SUITS, Range, format_card
 from Interactive import ask_for, help_command, quit_command, print_summary, interrogate_command, print_history, \
     secret_command, accuse_command
 
@@ -95,7 +95,36 @@ class AIPlayer(Player):
         self.set_low_suit(choice(lowest_suits))
 
     def play_turn(self, state):
-        pass
+        other_players = list(state.players)
+        other_players.remove(self)
+
+        action = 'interrogate'
+        opponent, cards = self.choose_option(state, other_players)
+
+        card_range = Range(*cards)
+        result = opponent.cards_in_range(card_range)
+
+        print "Interrogate player: {0}".format(opponent.name)
+        print "Low card: {0} High card: {1}".format(format_card(cards[0]), format_card(cards[1]))
+        print "Cards in this range: {0}".format(result)
+        state.history.append({'turn':      state.turn,
+                              'player':    state.current_player,
+                              'action':    'interrogate',
+                              'opponent':  opponent,
+                              'range':     card_range,
+                              'result':    result})
+
+    def choose_option(self, state, other_players):
+        card_pairs = self.prepare_card_pairs(state.question_cards)
+        return choice(other_players), choice(card_pairs)
+
+    def prepare_card_pairs(self, question_cards):
+        card_pairs = []
+        for index_low, low_card in enumerate(question_cards):
+            for index_high, high_card in enumerate(question_cards):
+                if index_low != index_high:
+                    card_pairs.append([low_card, high_card])
+        return card_pairs
 
     # noinspection PyMethodMayBeStatic
     def is_human(self):

@@ -217,23 +217,24 @@ def print_history(state):
                              'result':   HIDDEN,
                              'note':     '(Secret)'})
 
-    accusations = []
-    for row in state.accusations:
-        accusations.append({'fill':    '    ',
-                            'player':  row['player'].name,
-                            'accused': row['accused'].name,
-                            'cards':   ' '.join(format_card(card) for card in row['cards']),
-                            'result':  row['outcome']})
-
     columns = ['turn', 'player', 'opponent', 'range', 'result', 'note']
 
     print "History"
     maxlength = maxlength_by_column(data, columns)
     print_tabular_data(data, columns, maxlength)
-    print
-    print "Accusations"
-    maxlength.pop()  # remove the last length (for 'note') that we don't use
-    print_tabular_data(accusations, ['fill', 'player', 'accused', 'cards', 'result'], maxlength, headers=False)
+
+    if len(state.accusations) > 0:
+        accusations = []
+        for row in state.accusations:
+            accusations.append({'fill':    '    ',
+                                'player':  row['player'].name,
+                                'accused': row['accused'].name,
+                                'cards':   ' '.join(format_card(card) for card in row['cards']),
+                                'result':  row['outcome']})
+        print
+        print "Accusations"
+        maxlength.pop()  # remove the last length (for 'note') that we don't use
+        print_tabular_data(accusations, ['fill', 'player', 'accused', 'cards', 'result'], maxlength, headers=False)
 
     return False  # turn not ended
 

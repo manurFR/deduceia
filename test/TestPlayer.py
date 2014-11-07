@@ -1,6 +1,6 @@
 import unittest
 from Deck import Range
-from Player import HumanPlayer, Player
+from Player import HumanPlayer, Player, AIPlayer
 
 
 class TestPlayer(unittest.TestCase):
@@ -56,6 +56,12 @@ class TestPlayer(unittest.TestCase):
         card_range = Range((1, 'H'), (7, 'H'))  # 1 to 7 of hate
 
         self.assertEqual(2, player.cards_in_range(card_range))
+
+    def test_prepare_card_pairs(self):
+        player = AIPlayer(0)
+        self.assertItemsEqual([[(1, 'L'), (2, 'H')], [(1, 'L'), (3, '$')], [(2, 'H'), (3, '$')],
+                               [(2, 'H'), (1, 'L')], [(3, '$'), (1, 'L')], [(3, '$'), (2, 'H')]],
+                              player.prepare_card_pairs([(1, 'L'), (2, 'H'), (3, '$')]))
 
 
 if __name__ == '__main__':
