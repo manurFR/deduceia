@@ -58,6 +58,8 @@ def print_summary(state):
     if state.human_player.low_suit:
         print_low_suit(state.players)
     print_secret(state.players)
+    if len(state.question_cards) > 0:
+        print_question_cards(state)
     return False  # turn not ended
 
 
