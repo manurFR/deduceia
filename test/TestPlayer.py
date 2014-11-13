@@ -40,7 +40,7 @@ class TestPlayer(unittest.TestCase):
         self.assertItemsEqual(['L'], player.lowest_suits())
 
     def test_no_cards_in_range(self):
-        player = Player()
+        player = Player('jim')
         for card in [(2, '$'), (8, '$'), (4, 'L'), (5, 'L')]:
             player.deal_card(card)
 
@@ -49,7 +49,7 @@ class TestPlayer(unittest.TestCase):
         self.assertEqual(0, player.cards_in_range(card_range))
 
     def test_cards_in_range_more_than_zero(self):
-        player = Player()
+        player = Player('john')
         for card in [(4, 'L'), (5, 'L'), (2, 'H'), (5, 'H'), (9, 'H'), (2, '$'), (8, '$'), ]:
             player.deal_card(card)
 
@@ -58,7 +58,7 @@ class TestPlayer(unittest.TestCase):
         self.assertEqual(2, player.cards_in_range(card_range))
 
     def test_prepare_card_pairs(self):
-        player = AIPlayer(0)
+        player = AIPlayer('Ella')
         self.assertItemsEqual([[(1, 'L'), (2, 'H')], [(1, 'L'), (3, '$')], [(2, 'H'), (3, '$')],
                                [(2, 'H'), (1, 'L')], [(3, '$'), (1, 'L')], [(3, '$'), (2, 'H')]],
                               player.prepare_card_pairs([(1, 'L'), (2, 'H'), (3, '$')]))

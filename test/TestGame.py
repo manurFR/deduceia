@@ -18,7 +18,7 @@ class TestGame(unittest.TestCase):
         players, _ = prepare_players(3, 'Test')
         self.assertEqual(3, len(players))
         self.assertEqual(['AIPlayer', 'AIPlayer', 'HumanPlayer'], sorted([type(player).__name__ for player in players]))
-        self.assertEqual(['AI#1', 'AI#2', 'Test'], sorted([player.name for player in players]))
+        self.assertEqual(1, [player.name for player in players].count('Test'))
 
 
 if __name__ == '__main__':

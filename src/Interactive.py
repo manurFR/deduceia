@@ -85,12 +85,11 @@ def choose_an_opponent(state):
 
     list_opponents = list(state.players)
     list_opponents.remove(state.current_player)
-    list_opponents.sort(key=lambda o: o.id)
 
-    for player in list_opponents:
-        opponents[player.id] = player
+    for index, player in enumerate(list_opponents):
+        opponents[index+1] = player
 
-    allowed = [str(_id) for _id in opponents.keys()]
+    allowed = [str(index) for index in opponents.keys()]
 
     chosen_id = ask_for('Which opponent ? [{0}] '.format(' '.join(str(_id) + ':' + player.name
                                                                   for _id, player in opponents.iteritems())),

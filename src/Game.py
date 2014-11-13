@@ -1,4 +1,4 @@
-from random import shuffle
+from random import shuffle, sample
 
 from Deck import prepare_deck, deal_deck, draw_question_cards, discard_question_cards
 from GameState import GameState
@@ -17,8 +17,9 @@ def prepare_game_deck(nb_decks):
 def prepare_players(nb, player_name):
     human = HumanPlayer(player_name)
     list_players = [human]
-    for i in range(1, nb):
-        list_players.append(AIPlayer(i))
+    ai_names = sample(AIPlayer.NAMES, nb - 1)
+    for name in ai_names:
+        list_players.append(AIPlayer(name))
     shuffle(list_players)
     return list_players, human
 

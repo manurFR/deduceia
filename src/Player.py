@@ -14,7 +14,8 @@ COMMANDS = {'h': help_command,
 
 class Player(object):
 
-    def __init__(self):
+    def __init__(self, name):
+        self._name = name
         self._hand = []
         self._low_suit = None
         self._secret = 1
@@ -65,10 +66,6 @@ class Player(object):
 
 class HumanPlayer(Player):
 
-    def __init__(self, name):
-        super(HumanPlayer, self).__init__()
-        self._name = name
-
     def play_turn(self, state):
         # here self == human_player
         turn_ended = False
@@ -84,11 +81,8 @@ class HumanPlayer(Player):
 
 
 class AIPlayer(Player):
-
-    def __init__(self, id):
-        super(AIPlayer, self).__init__()
-        self.id = id
-        self._name = 'AI#{0}'.format(id)
+    NAMES = ['Amy', 'Ben', 'Clara', 'Don', 'Emma', 'Fred', 'Gina', 'Harry', 'Isa', 'Jim', 'Kat', 'Leo', 'Mia', 'Ned',
+             'Otis', 'Peggy', 'Rita', 'Sam', 'Tara', 'Vic', 'Walt', 'Yun', 'Zoe']
 
     def choose_low_suit(self, lowest_suits):
         # choose the low suit to reveal between two or three possible choices

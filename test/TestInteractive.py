@@ -156,9 +156,9 @@ class MyTestCase(unittest.TestCase):
             Interactive.raw_input = mock_raw_input('5', '2')
 
             player = HumanPlayer('joe')
-            ai1 = AIPlayer(1)
-            ai2 = AIPlayer(2)
-            ai3 = AIPlayer(3)
+            ai1 = AIPlayer('ai1')
+            ai2 = AIPlayer('ai2')
+            ai3 = AIPlayer('ai3')
 
             state = GameState()
             state.turn = 1
@@ -168,7 +168,7 @@ class MyTestCase(unittest.TestCase):
             with captured_output() as (out, err):
                 chosen_opponent = choose_an_opponent(state)
 
-            self.assertEqual(ai2, chosen_opponent)
+            self.assertEqual(ai3, chosen_opponent)
         finally:
             Interactive.raw_input = old_raw_input
 
@@ -178,13 +178,13 @@ class MyTestCase(unittest.TestCase):
             Interactive.raw_input = mock_raw_input('1', '3L', '7L')  # opponent id, low card, high card
 
             player = HumanPlayer('joe')
-            ai = AIPlayer(1)
-            ai._hand = [(1, 'L'), (3, 'L'), (6, 'L'), (2, 'H'), (8, '$'), (9, '$')]
+            tom = AIPlayer('tom')
+            tom._hand = [(1, 'L'), (3, 'L'), (6, 'L'), (2, 'H'), (8, '$'), (9, '$')]
 
             state = GameState()
             state.turn = 10
             state.current_player = player
-            state.players = [player, ai]
+            state.players = [player, tom]
             state.question_cards = [(1, 'L'), (3, 'L'), (7, 'L')]
 
             with captured_output() as (out, err):
@@ -196,7 +196,7 @@ class MyTestCase(unittest.TestCase):
             turn = state.history.pop()
             self.assertEqual(10, turn['turn'])
             self.assertEqual('joe', turn['player'].name)
-            self.assertEqual('AI#1', turn['opponent'].name)
+            self.assertEqual('tom', turn['opponent'].name)
             self.assertEqual('interrogate', turn['action'])
             self.assertEqual(['L'], turn['range'].suits)
             self.assertEqual([3, 4, 5, 6, 7], turn['range'].ranks)
@@ -211,11 +211,11 @@ class MyTestCase(unittest.TestCase):
             Interactive.raw_input = mock_raw_input('1', '3L', 'cancel')
 
             player = HumanPlayer('joe')
-            ai = AIPlayer(1)
+            tom = AIPlayer('tom')
 
             state = GameState()
             state.current_player = player
-            state.players = [player, ai]
+            state.players = [player, tom]
             state.history = []
             state.question_cards = [(1, 'L'), (3, 'L'), (7, 'L')]
 
@@ -235,13 +235,13 @@ class MyTestCase(unittest.TestCase):
             Interactive.raw_input = mock_raw_input('1', '3L', '3L', 'suit')  # opponent id, low card, high card
 
             player = HumanPlayer('joe')
-            ai = AIPlayer(1)
-            ai._hand = [(1, 'L'), (3, 'L'), (6, 'L'), (2, 'H'), (8, '$'), (9, '$')]
+            tom = AIPlayer('Tom')
+            tom._hand = [(1, 'L'), (3, 'L'), (6, 'L'), (2, 'H'), (8, '$'), (9, '$')]
 
             state = GameState()
             state.turn = 10
             state.current_player = player
-            state.players = [player, ai]
+            state.players = [player, tom]
             state.question_cards = [(1, '$'), (3, 'L'), (3, 'L')]
 
             with captured_output() as (out, err):
@@ -253,7 +253,7 @@ class MyTestCase(unittest.TestCase):
             turn = state.history.pop()
             self.assertEqual(10, turn['turn'])
             self.assertEqual('joe', turn['player'].name)
-            self.assertEqual('AI#1', turn['opponent'].name)
+            self.assertEqual('Tom', turn['opponent'].name)
             self.assertEqual('interrogate', turn['action'])
             self.assertEqual('3L->3L [suit]', str(turn['range']))
             self.assertEqual(3, turn['result'])
@@ -340,13 +340,13 @@ class MyTestCase(unittest.TestCase):
             Interactive.raw_input = mock_raw_input('1', '9$', '1H')  # opponent id, low card, high card
 
             player = HumanPlayer('joe')
-            ai = AIPlayer(1)
-            ai._hand = [(1, 'L'), (3, 'L'), (6, 'L'), (2, 'H'), (8, '$'), (9, '$')]
+            donna = AIPlayer('donna')
+            donna._hand = [(1, 'L'), (3, 'L'), (6, 'L'), (2, 'H'), (8, '$'), (9, '$')]
 
             state = GameState()
             state.turn = 1
             state.current_player = player
-            state.players = [player, ai]
+            state.players = [player, donna]
             state.question_cards = [(1, 'L'), (3, 'L'), (7, 'L')]
 
             with captured_output() as (out, err):
@@ -357,7 +357,7 @@ class MyTestCase(unittest.TestCase):
             turn = state.history.pop()
             self.assertEqual(1, turn['turn'])
             self.assertEqual('joe', turn['player'].name)
-            self.assertEqual('AI#1', turn['opponent'].name)
+            self.assertEqual('donna', turn['opponent'].name)
             self.assertEqual('secret', turn['action'])
             self.assertEqual(['L', 'H', '$'], turn['range'].suits)
             self.assertEqual([9, 1], turn['range'].ranks)
@@ -373,13 +373,13 @@ class MyTestCase(unittest.TestCase):
 
             joe = HumanPlayer('joe')
             joe._hand = [(4, 'L'), (8, 'L'), (5, 'H'), (8, 'H')]
-            ai = AIPlayer(1)
-            ai._hand = [(1, 'L'), (3, 'L'), (1, 'H'), (9, '$')]
+            tim = AIPlayer('tim')
+            tim._hand = [(1, 'L'), (3, 'L'), (1, 'H'), (9, '$')]
 
             state = GameState()
             state.turn = 23
             state.current_player = joe
-            state.players = [joe, ai]
+            state.players = [joe, tim]
             state.evidence_cards = [(5, '$'), (5, 'L')]
 
             with captured_output() as (out, err):
@@ -389,7 +389,7 @@ class MyTestCase(unittest.TestCase):
                              'Your guess is: Correct', output(out))
             accusation = state.accusations.pop()
             self.assertEqual('joe', accusation['player'].name)
-            self.assertEqual('AI#1', accusation['accused'].name)
+            self.assertEqual('tim', accusation['accused'].name)
             self.assertEqual([(5, 'L'), (5, '$')], accusation['cards'])
             self.assertEqual('correct', accusation['outcome'])
         finally:
@@ -402,7 +402,7 @@ class MyTestCase(unittest.TestCase):
 
             joe = HumanPlayer('joe')
             joe._hand = [(4, 'L'), (8, 'L'), (5, 'H'), (8, 'H')]
-            ai = AIPlayer(1)
+            ai = AIPlayer('ai')
             ai._hand = [(1, 'L'), (3, 'L'), (1, 'H'), (9, '$')]
 
             state = GameState()
@@ -418,7 +418,7 @@ class MyTestCase(unittest.TestCase):
                              'Your guess is: Incorrect', output(out))
             accusation = state.accusations.pop()
             self.assertEqual('joe', accusation['player'].name)
-            self.assertEqual('AI#1', accusation['accused'].name)
+            self.assertEqual('ai', accusation['accused'].name)
             self.assertEqual([(1, 'L'), (2, 'L')], accusation['cards'])
             self.assertEqual('incorrect', accusation['outcome'])
         finally:
@@ -431,9 +431,9 @@ class MyTestCase(unittest.TestCase):
 
             joe = HumanPlayer('joe')
             joe._hand = [(4, 'L'), (7, 'L'), (5, 'H'), (8, 'H')]
-            ai1 = AIPlayer(1)
+            ai1 = AIPlayer('ai1')
             ai1._hand = [(1, 'L'), (3, 'L'), (1, 'H'), (9, '$')]
-            ai2 = AIPlayer(2)
+            ai2 = AIPlayer('ai2')
             ai2._hand = [(8, 'L'), (3, 'H'), (2, '$'), (3, '$')]
 
             state = GameState()
