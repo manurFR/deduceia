@@ -113,12 +113,16 @@ class AIPlayer(Player):
         return choice(other_players), choice(card_pairs)
 
     def prepare_card_pairs(self, question_cards):
-        card_pairs = []
+        card_pairs = set()
         for index_low, low_card in enumerate(question_cards):
             for index_high, high_card in enumerate(question_cards):
                 if index_low != index_high:
-                    card_pairs.append([low_card, high_card])
-        return card_pairs
+                    if low_card == high_card:  # identical cards
+                        card_pairs.add((low_card, high_card, 'rank'))
+                        card_pairs.add((low_card, high_card, 'suit'))
+                    else:
+                        card_pairs.add((low_card, high_card))
+        return list(card_pairs)
 
     # noinspection PyMethodMayBeStatic
     def is_human(self):

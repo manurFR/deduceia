@@ -58,7 +58,6 @@ def print_summary(state):
     if state.human_player.low_suit:
         print_low_suit(state.players)
     print_secret(state.players)
-    # TODO add current turn & question cards
     return False  # turn not ended
 
 

@@ -59,9 +59,16 @@ class TestPlayer(unittest.TestCase):
 
     def test_prepare_card_pairs(self):
         player = AIPlayer('Ella')
-        self.assertItemsEqual([[(1, 'L'), (2, 'H')], [(1, 'L'), (3, '$')], [(2, 'H'), (3, '$')],
-                               [(2, 'H'), (1, 'L')], [(3, '$'), (1, 'L')], [(3, '$'), (2, 'H')]],
+        self.assertItemsEqual([((1, 'L'), (2, 'H')), ((1, 'L'), (3, '$')), ((2, 'H'), (3, '$')),
+                               ((2, 'H'), (1, 'L')), ((3, '$'), (1, 'L')), ((3, '$'), (2, 'H'))],
                               player.prepare_card_pairs([(1, 'L'), (2, 'H'), (3, '$')]))
+
+    def test_prepare_card_pairs_should_include_rank_and_suit_for_identical_cards(self):
+        player = AIPlayer('Ella')
+        pairs = player.prepare_card_pairs([(1, 'L'), (1, 'L'), (3, '$')])
+        print pairs
+        self.assertItemsEqual([((1, 'L'), (1, 'L'), 'rank'), ((1, 'L'), (1, 'L'), 'suit'),
+                               ((1, 'L'), (3, '$')), ((3, '$'), (1, 'L'))], pairs)
 
 
 if __name__ == '__main__':
