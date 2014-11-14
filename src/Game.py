@@ -37,18 +37,20 @@ def determine_low_suit(state):
             player.choose_low_suit(lowest_suits)
 
 
-def play_turn(state):
-    id_current_player = state.turn % len(state.players)
-    state.current_player = state.players[id_current_player]
-    other_players = []
-    for i in range(1, len(state.players)):
-        other_players.append(state.players[(id_current_player + i) % len(state.players)])
+def determine_current_player(state):
+    return state.players[(state.turn-1) % len(state.players)]
 
-    state.question_cards = draw_question_cards(state.interrogation_deck, state.discard_deck)
+
+def play_turn(state):
+    state.current_player = determine_current_player(state)
     print
     print 'Turn {0} - {1}'.format(state.turn, state.current_player.name)
+
+    state.question_cards = draw_question_cards(state.interrogation_deck, state.discard_deck)
     print_question_cards(state)
+
     state.current_player.play_turn(state)
+
     discard_question_cards(state.question_cards, state.discard_deck)
     state.turn += 1
 

@@ -1,6 +1,7 @@
 import unittest
 
-from Game import prepare_game_deck, prepare_players
+from Game import prepare_game_deck, prepare_players, determine_current_player
+from GameState import GameState
 from Player import HumanPlayer
 
 
@@ -19,6 +20,19 @@ class TestGame(unittest.TestCase):
         self.assertEqual(3, len(players))
         self.assertEqual(['AIPlayer', 'AIPlayer', 'HumanPlayer'], sorted([type(player).__name__ for player in players]))
         self.assertEqual(1, [player.name for player in players].count('Test'))
+
+    def test_determine_current_player_turn1(self):
+        state = GameState()
+        state.players = ['one', 'two', 'three']
+        state.turn = 1
+        self.assertEqual('one', determine_current_player(state))
+
+    def test_determine_current_player_after_a_few_rounds(self):
+        state = GameState()
+        state.players = ['one', 'two', 'three']
+        state.turn = 8
+        self.assertEqual('two', determine_current_player(state))
+
 
 
 if __name__ == '__main__':
