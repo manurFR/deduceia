@@ -268,6 +268,6 @@ def accuse_command(state):
                               'accused':  opponent,
                               'cards':    accusation_cards,
                               'outcome':  outcome})
-
+    state.status = 'ended'
 
     return True  # turn ended

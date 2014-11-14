@@ -14,3 +14,5 @@ class GameState(object):
 
         self.history = []
         self.accusations = []
+
+        self.status = 'playing'

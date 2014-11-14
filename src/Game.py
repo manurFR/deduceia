@@ -89,7 +89,7 @@ def main():
     print_low_suit(players)
 
     state.turn = 1
-    while True:
+    while state.status != 'ended':
         play_turn(state)
 
 

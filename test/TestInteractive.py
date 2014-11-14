@@ -407,6 +407,7 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual('tim', accusation['accused'].name)
             self.assertEqual([(5, 'L'), (5, '$')], accusation['cards'])
             self.assertEqual('correct', accusation['outcome'])
+            self.assertEqual('ended', state.status)
         finally:
             Interactive.raw_input = old_raw_input
 
@@ -436,6 +437,7 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual('ai', accusation['accused'].name)
             self.assertEqual([(1, 'L'), (2, 'L')], accusation['cards'])
             self.assertEqual('incorrect', accusation['outcome'])
+            self.assertEqual('ended', state.status)
         finally:
             Interactive.raw_input = old_raw_input
 
@@ -462,6 +464,7 @@ class MyTestCase(unittest.TestCase):
 
             self.assertEqual('Accuse\n\n'
                              'Your guess is: Incorrect', output(out))
+            self.assertEqual('ended', state.status)
         finally:
             Interactive.raw_input = old_raw_input
 
