@@ -62,18 +62,18 @@ def hand_sorter(card):
     return 10 * SUITS.index(card[1]) + card[0]
 
 
-def draw_question_cards(interrogation_deck, discard_deck):
-    question_cards = []
+def draw_question_cards(state):
+    state.question_cards = []
 
-    if len(interrogation_deck) < NB_QUESTION_CARDS:
-        question_cards.extend(interrogation_deck)
-        interrogation_deck = list(discard_deck)  # clone !
-        del discard_deck[:]                      # clear deck by reference !
-        shuffle(interrogation_deck)
+    if len(state.interrogation_deck) < NB_QUESTION_CARDS:
+        state.question_cards.extend(state.interrogation_deck)
+        state.interrogation_deck = list(state.discard_deck)  # clone !
+        state.discard_deck = []
+        shuffle(state.interrogation_deck)
 
-    for _ in range(len(question_cards), NB_QUESTION_CARDS):
-        question_cards.append(interrogation_deck.pop())
-    return sorted(question_cards, key=hand_sorter)
+    for _ in range(len(state.question_cards), NB_QUESTION_CARDS):
+        state.question_cards.append(state.interrogation_deck.pop())
+    state.question_cards.sort(key=hand_sorter)
 
 
 def discard_question_cards(question_cards, discard_deck):

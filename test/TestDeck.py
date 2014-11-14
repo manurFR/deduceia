@@ -63,20 +63,23 @@ class TestDeck(unittest.TestCase):
         self.assertEqual((5, 'L'), parse_card('5L'))
 
     def test_draw_question_cards(self):
-        interrogation_deck = [(8, 'H'), (3, '$'), (1, '$'), (1, 'L')]
+        state = GameState()
+        state.interrogation_deck = [(8, 'H'), (3, '$'), (1, '$'), (1, 'L')]
 
-        self.assertItemsEqual([(1, 'L'), (1, '$'), (3, '$')], draw_question_cards(interrogation_deck, []))
-        self.assertEqual([(8, 'H')], interrogation_deck)
+        draw_question_cards(state)
+        self.assertItemsEqual([(1, 'L'), (1, '$'), (3, '$')], state.question_cards)
+        self.assertEqual([(8, 'H')], state.interrogation_deck)
 
     def test_draw_question_cards_when_there_are_not_enough_cards_in_the_interrogation_deck(self):
-        interrogation_deck = [(4, 'L')]
-        discard_deck = [(3, '$'), (6, 'H'), (7, 'L')]
+        state = GameState()
+        state.interrogation_deck = [(4, 'L')]
+        state.discard_deck = [(3, '$'), (6, 'H'), (7, 'L')]
 
-        drawn_cards = draw_question_cards(interrogation_deck, discard_deck)
-        self.assertEqual(3, len(drawn_cards))
-        self.assertIn((4, 'L'), drawn_cards)
-        self.assertEqual(0, len(discard_deck))
-        self.assertEqual(1, len(interrogation_deck))
+        draw_question_cards(state)
+        self.assertEqual(3, len(state.question_cards))
+        self.assertIn((4, 'L'), state.question_cards)
+        self.assertEqual(0, len(state.discard_deck))
+        self.assertEqual(1, len(state.interrogation_deck))
 
     def test_discard_question_cards(self):
         state = GameState()
