@@ -102,7 +102,10 @@ class AIPlayer(Player):
         result = opponent.cards_in_range(card_range)
 
         print "Interrogate player: {0}".format(opponent.name)
-        print "Low card: {0} High card: {1}".format(format_card(cards[0]), format_card(cards[1]))
+        if len(cards) == 3:
+            print "Low card: {0} High card: {1} [{2}]".format(format_card(cards[0]), format_card(cards[1]), cards[2])
+        else:
+            print "Low card: {0} High card: {1}".format(format_card(cards[0]), format_card(cards[1]))
         print "Cards in this range: {0}".format(result)
         state.history.append({'turn':      state.turn,
                               'player':    state.current_player,
