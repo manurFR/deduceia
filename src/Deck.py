@@ -11,6 +11,8 @@ def prepare_deck():
 
 def resolve_murder_card(evidence1, evidence2):
     rank = (evidence1[0] + evidence2[0]) % len(RANKS)
+    if rank == 0:
+        rank = len(RANKS)
     if evidence1[1] == evidence2[1]:
         suit = evidence1[1]
     else:

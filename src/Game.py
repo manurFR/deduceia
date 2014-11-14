@@ -3,7 +3,7 @@ from random import shuffle, sample
 from Deck import prepare_deck, deal_deck, draw_question_cards, discard_question_cards
 from GameState import GameState
 from Player import HumanPlayer, AIPlayer
-from Interactive import ask_for, print_summary, print_low_suit, print_question_cards
+from Interactive import ask_for, print_summary, print_low_suit, print_question_cards, end_game_summary
 
 
 def prepare_game_deck(nb_decks):
@@ -92,6 +92,8 @@ def main():
     while state.status != 'ended':
         play_turn(state)
 
+    end_game_summary(state)
+    print
 
 if __name__ == '__main__':
     main()

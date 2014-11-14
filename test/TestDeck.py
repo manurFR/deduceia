@@ -22,6 +22,10 @@ class TestDeck(unittest.TestCase):
         self.assertEqual('$', resolve_murder_card((1, '$'), (7, '$'))[1])
         self.assertEqual('$', resolve_murder_card((8, 'L'), (9, 'H'))[1])
 
+    def test_resolve_murder_card_for_a_nine(self):
+        self.assertEqual((9, '$'), resolve_murder_card((1, '$'), (8, '$')))
+        self.assertEqual((9, 'H'), resolve_murder_card((8, 'L'), (1, '$')))
+
     def test_next_card_for_a_regular_card(self):
         self.assertEqual((3, 'H'), next_card((2, 'H')))
 

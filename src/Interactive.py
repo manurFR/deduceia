@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import sys
 
-from Deck import format_hand, format_card, Range, parse_card, determine_murderer
+from Deck import format_hand, format_card, Range, parse_card, determine_murderer, resolve_murder_card
 
 
 CANCEL = "**CANCEL**"
@@ -271,3 +271,23 @@ def accuse_command(state):
     state.status = 'ended'
 
     return True  # turn ended
+
+
+def end_game_summary(state):
+    print "End Game"
+    print_history(state)
+
+    murder_card = resolve_murder_card(*state.evidence_cards)
+    murderer = None
+
+    print
+    print "Hands:"
+    for player in state.players:
+        print "{0}: {1}".format(player.name, format_hand(player.hand))
+        if murder_card in player.hand:
+            murderer = player
+
+    print
+    print "Evidence cards: {0} {1}".format(*[format_card(card) for card in state.evidence_cards])
+    print "Murder card: {0}".format(format_card(murder_card))
+    print "Murderer: {0}".format(murderer.name)
