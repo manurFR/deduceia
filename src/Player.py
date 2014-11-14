@@ -47,6 +47,9 @@ class Player(object):
     def cards_in_range(self, card_range):
         return len([card for card in iter(card_range) if card in self.hand])
 
+    def use_secret(self):
+        self._secret -= 1
+
     @property
     def name(self):
         return self._name

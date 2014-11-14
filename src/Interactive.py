@@ -131,6 +131,11 @@ def interrogate_command(state):
 
 
 def secret_command(state):
+    if state.current_player.secret == 0:
+        print
+        print "Secret already used!"
+        return False  # turn not ended
+
     print
     print "Secret"
     opponent = choose_an_opponent(state)
@@ -145,6 +150,8 @@ def secret_command(state):
         choice = ask_for('Identical cards. Choose rank or suit: ', unicode, ['rank', 'suit', 'cancel'])
         if choice == 'cancel':
             return False  # turn not ended
+
+    state.current_player.use_secret()
     card_range = Range(low_card, high_card, choice=choice)
     result = opponent.cards_in_range(card_range)
     print "Cards in this range: {0}".format(result)

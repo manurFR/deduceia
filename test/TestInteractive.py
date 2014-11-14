@@ -363,8 +363,23 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual([9, 1], turn['range'].ranks)
             self.assertEqual(2, turn['result'])
             self.assertTrue(turn_ended)
+            self.assertEqual(0, state.current_player.secret)
         finally:
             Interactive.raw_input = old_raw_input
+
+    def test_secret_is_refused_if_no_secrets_left(self):
+        player = HumanPlayer('joe')
+        player._secret = 0
+
+        state = GameState()
+        state.turn = 1
+        state.current_player = player
+
+        with captured_output() as (out, err):
+            turn_ended = secret_command(state)
+
+        self.assertEqual('Secret already used!', output(out))
+        self.assertFalse(turn_ended)
 
     def test_accuse_good_guess(self):
         try:
