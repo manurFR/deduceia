@@ -2,6 +2,7 @@ from random import choice
 from Deck import hand_sorter, SUITS, Range, format_card
 from Interactive import ask_for, help_command, quit_command, print_summary, interrogate_command, print_history, \
     secret_command, accuse_command
+from Sheet import EVIDENCE_CARDS, Sheet
 
 COMMANDS = {'h': help_command,
             'r': print_summary,
@@ -133,3 +134,9 @@ class AIPlayer(Player):
     # noinspection PyMethodMayBeStatic
     def is_human(self):
         return False
+
+    # noinspection PyAttributeOutsideInit
+    def setup_ai(self, other_players):
+        self.sheets = {EVIDENCE_CARDS: Sheet(EVIDENCE_CARDS)}
+        for player in other_players:
+            self.sheets[player] = Sheet(player.name)

@@ -21,6 +21,11 @@ def prepare_players(nb, player_name):
     for name in ai_names:
         list_players.append(AIPlayer(name))
     shuffle(list_players)
+    for player in list_players:
+        if not player.is_human():
+            other_players = list(list_players)
+            other_players.remove(player)
+            player.setup_ai(other_players)
     return list_players, human
 
 
