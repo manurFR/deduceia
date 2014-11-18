@@ -22,3 +22,15 @@ class Sheet(object):
         self.table[TOTAL] = dict((rank, UNKNOWN) for rank in Deck.RANKS)  # initialize totals for ranks
 
         self.grand_total = UNKNOWN
+
+    def exclude_cards(self, cards):
+        if not isinstance(cards, list):
+            cards = [cards]
+        for card in cards:
+            self.table[card[1]][card[0]] = MISS
+
+    def own_cards(self, cards):
+        if not isinstance(cards, list):
+            cards = [cards]
+        for card in cards:
+            self.table[card[1]][card[0]] = OWND

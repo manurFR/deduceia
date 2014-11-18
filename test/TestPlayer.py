@@ -1,5 +1,6 @@
 import unittest
 from Deck import Range
+from GameState import GameState
 from Player import HumanPlayer, Player, AIPlayer
 
 
@@ -69,6 +70,29 @@ class TestPlayer(unittest.TestCase):
         print pairs
         self.assertItemsEqual([((1, 'L'), (1, 'L'), 'rank'), ((1, 'L'), (1, 'L'), 'suit'),
                                ((1, 'L'), (3, '$')), ((3, '$'), (1, 'L'))], pairs)
+
+    def test_ai_player_setup_ai(self):
+        player1 = AIPlayer('Thor')
+        player2 = AIPlayer('Sigrid')
+        player3 = HumanPlayer('Bill')
+
+        state = GameState()
+        state.players = [player1, player2, player3]
+        player1._hand = [(1, 'L'), (8, '$')]
+        player2._hand = [(7, 'L'), (4, 'H')]
+        player3._hand = [(9, 'H'), (9, '$')]
+
+        state.extra_card = (5, 'H')
+
+        player1.setup_ai(state)
+
+        expected_sheet = {'L': {1:  0, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1, 8: -1, 9: -1, 'total': -1},
+                          'H': {1: -1, 2: -1, 3: -1, 4: -1, 5:  0, 6: -1, 7: -1, 8: -1, 9: -1, 'total': -1},
+                          '$': {1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1, 8:  0, 9: -1, 'total': -1},
+                          'total': {1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1, 8: -1, 9: -1}}
+        self.assertEqual(expected_sheet, player1.sheets['evidence'].table)
+        self.assertEqual(expected_sheet, player1.sheets[player2].table)
+        self.assertEqual(expected_sheet, player1.sheets[player3].table)
 
 
 if __name__ == '__main__':

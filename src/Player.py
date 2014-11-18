@@ -136,7 +136,12 @@ class AIPlayer(Player):
         return False
 
     # noinspection PyAttributeOutsideInit
-    def setup_ai(self, other_players):
+    def setup_ai(self, state):
         self.sheets = {EVIDENCE_CARDS: Sheet(EVIDENCE_CARDS)}
-        for player in other_players:
-            self.sheets[player] = Sheet(player.name)
+        for player in state.players:
+            if player != self:
+                self.sheets[player] = Sheet(player.name)
+
+        for sheet in self.sheets.itervalues():
+            sheet.exclude_cards(state.extra_card)
+            sheet.exclude_cards(self.hand)
