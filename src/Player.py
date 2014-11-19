@@ -145,3 +145,14 @@ class AIPlayer(Player):
         for sheet in self.sheets.itervalues():
             sheet.exclude_cards(state.extra_card)
             sheet.exclude_cards(self.hand)
+
+    def review_last_interrogate(self, state):
+        index = -1
+        while state.history[index]['action'] != 'interrogate':
+            index -= 1
+        fact = state.history[index]
+        if fact['opponent'] == self:
+            return  # we don't need to keep a sheet about ourselves
+
+        if fact['result'] == 0:  # we are certain the opponent has no cards from the range
+            self.sheets[fact['opponent']].exclude_cards(fact['range'].cards())

@@ -93,7 +93,6 @@ def determine_murderer(state, accusation_cards):
 
 class Range(object):
 
-
     def __init__(self, low_card, high_card, choice=None):
         self.low_card = low_card
         self.high_card = high_card
@@ -124,8 +123,12 @@ class Range(object):
         elif self.low_card[0] > self.high_card[0]:  # wrap around the corner
             return range(self.low_card[0], len(RANKS) + 1) + range(1, self.high_card[0] + 1)
 
+    def cards(self):
+        return list(self)
+
     def __iter__(self):
         return iter((rank, suit) for rank in self.ranks for suit in self.suits)
+
     def __str__(self):
         return_str = '{0}->{1}'.format(format_card(self.low_card), format_card(self.high_card))
         if self.identical_cards:

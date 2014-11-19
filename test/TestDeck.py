@@ -191,6 +191,9 @@ class TestRange(unittest.TestCase):
         self.assertEqual("3L->5$", str(Range((3, 'L'), (5, '$'))))
         self.assertEqual("3L->3L [rank]", str(Range((3, 'L'), (3, 'L'), choice='rank')))
 
+    def test_range_provides_the_list_of_cards(self):
+        self.assertEqual([(8, 'L'), (9, 'L'), (1, 'L')], Range((8, 'L'), (1, 'L')).cards())
+
 
 if __name__ == '__main__':
     unittest.main()
