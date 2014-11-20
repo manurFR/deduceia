@@ -2,7 +2,7 @@ from random import choice
 from Deck import hand_sorter, SUITS, Range, format_card
 from Interactive import ask_for, help_command, quit_command, print_summary, interrogate_command, print_history, \
     secret_command, accuse_command
-from Sheet import EVIDENCE_CARDS, Sheet
+from Sheet import EVIDENCE_CARDS, Sheet, VOID
 
 COMMANDS = {'h': help_command,
             'r': print_summary,
@@ -156,3 +156,9 @@ class AIPlayer(Player):
 
         if fact['result'] == 0:  # we are certain the opponent has no cards from the range
             self.sheets[fact['opponent']].exclude_cards(fact['range'].cards())
+
+        unknown_slots = [card for card in fact['range'].cards()
+                         if self.sheets[fact['opponent']].table[card[1]][card[0]] == VOID]
+        if fact['result'] == len(unknown_slots):  # we are certain the opponent has all the unknown cards form the range
+            self.sheets[fact['opponent']].own_cards(unknown_slots)
+            # TODO refresh sheets about other players and main one

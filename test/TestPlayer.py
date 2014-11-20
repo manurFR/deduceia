@@ -2,6 +2,7 @@ import unittest
 from Deck import Range
 from GameState import GameState
 from Player import HumanPlayer, Player, AIPlayer
+from TestUtils import sheet_table
 
 
 class TestPlayer(unittest.TestCase):
@@ -86,10 +87,8 @@ class TestPlayer(unittest.TestCase):
 
         thor.setup_ai(state)
 
-        expected_sheet = {'L': {1:  0, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1, 8: -1, 9: -1, 'total': -1},
-                          'H': {1: -1, 2: -1, 3: -1, 4: -1, 5:  0, 6: -1, 7: -1, 8: -1, 9: -1, 'total': -1},
-                          '$': {1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1, 8:  0, 9: -1, 'total': -1},
-                          'total': {1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1, 8: -1, 9: -1}}
+        expected_sheet = sheet_table(excluded=[(1, 'L'), (8, '$'), (5, 'H')])
+
         self.assertEqual(expected_sheet, thor.sheets['evidence'].table)
         self.assertEqual(expected_sheet, thor.sheets[sigrid].table)
         self.assertEqual(expected_sheet, thor.sheets[erlend].table)
@@ -111,11 +110,8 @@ class TestPlayer(unittest.TestCase):
         thor.setup_ai(state)
         thor.review_last_interrogate(state)
 
-        expected_sheet_for_sigrid = {'L': {1:  0, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1, 8: -1, 9: -1, 'total': -1},
-                                     'H': {1: -1, 2:  0, 3:  0, 4:  0, 5:  0, 6:  0, 7: -1, 8: -1, 9: -1, 'total': -1},
-                                     '$': {1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1, 8: -1, 9: -1, 'total': -1},
-                                     'total': {1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1, 8: -1, 9: -1}}
-        self.assertEqual(expected_sheet_for_sigrid, thor.sheets[sigrid].table)
+        self.assertEqual(sheet_table(excluded=[(1, 'L'), (2, 'H'), (3, 'H'), (4, 'H'), (5, 'H'), (6, 'H')]),
+                         thor.sheets[sigrid].table)
 
     def test_review_last_interrogate_does_nothing_if_opponent_is_self(self):
         thor = AIPlayer('Thor')
@@ -136,6 +132,28 @@ class TestPlayer(unittest.TestCase):
             thor.review_last_interrogate(state)
         except KeyError:
             self.fail("review_last_interrogate() has tried to modify the player's own sheet")
+
+    def test_review_last_interrogate_marks_cards_as_owned_when_results_equals_all_unknown_slots(self):
+        thor = AIPlayer('Thor')
+        sigrid = AIPlayer('Sigrid')
+
+        thor._hand = [(5, 'H')]
+
+        state = GameState()
+        state.players = [thor, sigrid]
+        state.extra_card = (3, 'H')
+        state.history.append({'turn':      1,
+                              'player':    thor,
+                              'action':    'interrogate',
+                              'opponent':  sigrid,
+                              'range':     Range((2, 'H'), (6, 'H')),
+                              'result':    3})
+
+        thor.setup_ai(state)
+        thor.review_last_interrogate(state)
+
+        self.assertEqual(sheet_table(excluded=[(3, 'H'), (5, 'H')], owned=[(2, 'H'), (4, 'H'), (6, 'H')]),
+                         thor.sheets[sigrid].table)
 
 
 if __name__ == '__main__':
