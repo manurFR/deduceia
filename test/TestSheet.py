@@ -1,4 +1,5 @@
 import unittest
+from Deck import Range
 from Sheet import Sheet
 
 
@@ -43,6 +44,12 @@ class TestSheet(unittest.TestCase):
              'H': {1: -1, 2: -1, 3:  1, 4: -1, 5: -1, 6: -1, 7: -1, 8: -1, 9: -1, 'total': -1},
              '$': {1: -1, 2: -1, 3:  1, 4: -1, 5: -1, 6: -1, 7: -1, 8: -1, 9: -1, 'total': -1},
              'total': {1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1, 8: -1, 9: -1}}, sheet.table)
+
+    def test_voids(self):
+        sheet = Sheet('test')
+        sheet.exclude_cards(Range((2, 'L'), (8, '$')).cards())
+
+        self.assertItemsEqual([(1, 'L'), (1, 'H'), (1, '$'), (9, 'L'), (9, 'H'), (9, '$')], sheet.voids())
 
 
 if __name__ == '__main__':

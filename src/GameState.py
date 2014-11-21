@@ -16,3 +16,10 @@ class GameState(object):
         self.accusations = []
 
         self.status = 'playing'
+
+    def players_except(self, *excluded):
+        list_players = list(self.players)
+        for player in excluded:
+            if player in list_players:
+                list_players.remove(player)
+        return list_players

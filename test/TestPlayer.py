@@ -1,7 +1,9 @@
 import unittest
+
 from Deck import Range
 from GameState import GameState
 from Player import HumanPlayer, Player, AIPlayer
+from Sheet import EVIDENCE_CARDS
 from TestUtils import sheet_table
 
 
@@ -68,7 +70,6 @@ class TestPlayer(unittest.TestCase):
     def test_prepare_card_pairs_should_include_rank_and_suit_for_identical_cards(self):
         player = AIPlayer('Ella')
         pairs = player.prepare_card_pairs([(1, 'L'), (1, 'L'), (3, '$')])
-        print pairs
         self.assertItemsEqual([((1, 'L'), (1, 'L'), 'rank'), ((1, 'L'), (1, 'L'), 'suit'),
                                ((1, 'L'), (3, '$')), ((3, '$'), (1, 'L'))], pairs)
 
@@ -136,11 +137,12 @@ class TestPlayer(unittest.TestCase):
     def test_review_last_interrogate_marks_cards_as_owned_when_results_equals_all_unknown_slots(self):
         thor = AIPlayer('Thor')
         sigrid = AIPlayer('Sigrid')
+        erlend = HumanPlayer('Erlend')
 
         thor._hand = [(5, 'H')]
 
         state = GameState()
-        state.players = [thor, sigrid]
+        state.players = [thor, sigrid, erlend]
         state.extra_card = (3, 'H')
         state.history.append({'turn':      1,
                               'player':    thor,
@@ -154,6 +156,11 @@ class TestPlayer(unittest.TestCase):
 
         self.assertEqual(sheet_table(excluded=[(3, 'H'), (5, 'H')], owned=[(2, 'H'), (4, 'H'), (6, 'H')]),
                          thor.sheets[sigrid].table)
+        self.assertEqual(sheet_table(excluded=[(3, 'H'), (5, 'H'), (2, 'H'), (4, 'H'), (6, 'H')]),
+                         thor.sheets[erlend].table)
+        self.assertEqual(sheet_table(excluded=[(3, 'H'), (5, 'H'), (2, 'H'), (4, 'H'), (6, 'H')]),
+                         thor.sheets[EVIDENCE_CARDS].table)
+
 
 
 if __name__ == '__main__':

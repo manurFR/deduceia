@@ -84,8 +84,7 @@ def print_question_cards(state):
 def choose_an_opponent(state):
     opponents = OrderedDict()
 
-    list_opponents = list(state.players)
-    list_opponents.remove(state.current_player)
+    list_opponents = state.players_except(state.current_player)
 
     for index, player in enumerate(list_opponents):
         opponents[index+1] = player

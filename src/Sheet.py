@@ -34,3 +34,15 @@ class Sheet(object):
             cards = [cards]
         for card in cards:
             self.table[card[1]][card[0]] = OWND
+
+    def _filter(self, filter_status):
+        cards = []
+        for suit in self.table.keys():
+            if suit != TOTAL:
+                for rank, status in self.table[suit].iteritems():
+                    if rank != TOTAL and status == filter_status:
+                        cards.append((rank, suit))
+        return cards
+
+    def voids(self):
+        return self._filter(filter_status=VOID)

@@ -93,10 +93,8 @@ class AIPlayer(Player):
         self.set_low_suit(choice(lowest_suits))
 
     def play_turn(self, state):
-        other_players = list(state.players)
-        other_players.remove(self)
+        other_players = state.players_except(self)
 
-        action = 'interrogate'
         opponent, cards = self.choose_option(state, other_players)
 
         card_range = Range(*cards)
@@ -157,8 +155,9 @@ class AIPlayer(Player):
         if fact['result'] == 0:  # we are certain the opponent has no cards from the range
             self.sheets[fact['opponent']].exclude_cards(fact['range'].cards())
 
-        unknown_slots = [card for card in fact['range'].cards()
-                         if self.sheets[fact['opponent']].table[card[1]][card[0]] == VOID]
+        unknown_slots = [card for card in fact['range'].cards() if card in self.sheets[fact['opponent']].voids()]
         if fact['result'] == len(unknown_slots):  # we are certain the opponent has all the unknown cards form the range
             self.sheets[fact['opponent']].own_cards(unknown_slots)
-            # TODO refresh sheets about other players and main one
+            for player in state.players_except(fact['opponent'], self):
+                self.sheets[player].exclude_cards(unknown_slots)
+            self.sheets[EVIDENCE_CARDS].exclude_cards(unknown_slots)
