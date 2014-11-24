@@ -2,7 +2,7 @@ from random import choice
 from Deck import hand_sorter, SUITS, Range, format_card
 from Interactive import ask_for, help_command, quit_command, print_summary, interrogate_command, print_history, \
     secret_command, accuse_command
-from Sheet import EVIDENCE_CARDS, Sheet, VOID
+from Sheet import EVIDENCE_CARDS, Sheet, VOID, TOTAL, UNKNOWN
 
 COMMANDS = {'h': help_command,
             'r': print_summary,
@@ -145,12 +145,11 @@ class AIPlayer(Player):
             sheet.exclude_cards(self.hand)
 
     def review_last_interrogate(self, state):
-        index = -1
-        while state.history[index]['action'] != 'interrogate':
-            index -= 1
-        fact = state.history[index]
+        fact = state.history[-1]
         if fact['opponent'] == self:
             return  # we don't need to keep a sheet about ourselves
+        if fact['action'] == 'secret' and fact['player'] != self:
+            return  # secrets that the current player did not asked are not knwnon by him(her)
 
         if fact['result'] == 0:  # we are certain the opponent has no cards from the range
             self.sheets[fact['opponent']].exclude_cards(fact['range'].cards())
@@ -161,3 +160,10 @@ class AIPlayer(Player):
             for player in state.players_except(fact['opponent'], self):
                 self.sheets[player].exclude_cards(unknown_slots)
             self.sheets[EVIDENCE_CARDS].exclude_cards(unknown_slots)
+
+    def review_totals(self):
+        for player in self.sheets.keys():
+            table = self.sheets[player].table
+            for suit in SUITS:
+                if table[suit][TOTAL] != UNKNOWN and table[suit][TOTAL] <= self.sheets[player].owned(suit):
+                    self.sheets[player].exclude_suit(suit)

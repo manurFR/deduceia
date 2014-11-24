@@ -19,4 +19,6 @@ def sheet_table(**kwargs):
     sheet = Sheet('test')
     sheet.exclude_cards(kwargs.get('excluded', []))
     sheet.own_cards(kwargs.get('owned', []))
+    for total, value in kwargs.get('totals', {}).iteritems():
+        sheet.set_suit_total(total, value)
     return sheet.table

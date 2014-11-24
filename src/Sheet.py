@@ -35,10 +35,14 @@ class Sheet(object):
         for card in cards:
             self.table[card[1]][card[0]] = OWND
 
-    def _filter(self, filter_status):
+    def set_suit_total(self, suit, total):
+        assert suit in Deck.SUITS
+        self.table[suit][TOTAL] = total
+
+    def _filter(self, filter_status, filter_suit=None):
         cards = []
         for suit in self.table.keys():
-            if suit != TOTAL:
+            if (filter_suit is None and suit != TOTAL) or (suit == filter_suit):
                 for rank, status in self.table[suit].iteritems():
                     if rank != TOTAL and status == filter_status:
                         cards.append((rank, suit))
@@ -46,3 +50,13 @@ class Sheet(object):
 
     def voids(self):
         return self._filter(filter_status=VOID)
+
+    def owned(self, suit=None):
+        return self._filter(filter_status=OWND, filter_suit=suit)
+
+    def exclude_suit(self, suit):
+        assert suit in Deck.SUITS
+
+        for rank, status in self.table[suit].iteritems():
+            if rank != TOTAL and status == VOID:
+                self.table[suit][rank] = MISS
