@@ -48,15 +48,22 @@ class Sheet(object):
                         cards.append((rank, suit))
         return cards
 
-    def voids(self):
-        return self._filter(filter_status=VOID)
+    def voids(self, suit=None):
+        return self._filter(filter_status=VOID, filter_suit=suit)
 
     def owned(self, suit=None):
         return self._filter(filter_status=OWND, filter_suit=suit)
 
-    def exclude_suit(self, suit):
+    def exclude_when_void(self, suit):
         assert suit in Deck.SUITS
 
         for rank, status in self.table[suit].iteritems():
             if rank != TOTAL and status == VOID:
                 self.table[suit][rank] = MISS
+
+    def own_when_void(self, suit):
+        assert suit in Deck.SUITS
+
+        for rank, status in self.table[suit].iteritems():
+            if rank != TOTAL and status == VOID:
+                self.table[suit][rank] = OWND

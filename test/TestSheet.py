@@ -48,6 +48,12 @@ class TestSheet(unittest.TestCase):
 
         self.assertItemsEqual([(1, 'L'), (1, 'H'), (1, '$'), (9, 'L'), (9, 'H'), (9, '$')], sheet.voids())
 
+    def test_voids_for_a_suit(self):
+        sheet = Sheet('test')
+        sheet.exclude_cards(Range((2, 'L'), (8, '$')).cards())
+
+        self.assertItemsEqual([(1, 'H'), (9, 'H')], sheet.voids('H'))
+
     def test_owned(self):
         sheet = Sheet('test')
         sheet.own_cards([(2, 'L'), (6, 'L'), (3, 'H')])
@@ -60,15 +66,26 @@ class TestSheet(unittest.TestCase):
 
         self.assertItemsEqual([(2, 'L'), (6, 'L')], sheet.owned('L'))
 
-    def test_exclude_suit_marks_unknown_cards_as_excluded(self):
+    def test_exclude_when_void_marks_unknown_cards_as_excluded(self):
         sheet = Sheet('test')
         sheet.own_cards([(2, 'L'), (6, 'L'), (9, 'L')])
 
-        sheet.exclude_suit('L')
+        sheet.exclude_when_void('L')
 
         self.assertEqual(sheet_table(excluded=[(1, 'L'), (3, 'L'), (4, 'L'), (5, 'L'), (7, 'L'), (8, 'L')],
                                      owned=[(2, 'L'), (6, 'L'), (9, 'L')]),
                          sheet.table)
+
+    def test_own_when_void_marks_unknown_cards_as_owned(self):
+        sheet = Sheet('test')
+        sheet.exclude_cards([(2, 'L'), (6, 'L'), (9, 'L')])
+
+        sheet.own_when_void('L')
+
+        self.assertEqual(sheet_table(excluded=[(2, 'L'), (6, 'L'), (9, 'L')],
+                                     owned=[(1, 'L'), (3, 'L'), (4, 'L'), (5, 'L'), (7, 'L'), (8, 'L')]),
+                         sheet.table)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -141,7 +141,8 @@ class AIPlayer(Player):
                 self.sheets[player] = Sheet(player.name)
 
         for sheet in self.sheets.itervalues():
-            sheet.exclude_cards(state.extra_card)
+            if state.extra_card is not None:
+                sheet.exclude_cards(state.extra_card)
             sheet.exclude_cards(self.hand)
 
     def review_last_interrogate(self, state):
@@ -165,5 +166,10 @@ class AIPlayer(Player):
         for player in self.sheets.keys():
             table = self.sheets[player].table
             for suit in SUITS:
-                if table[suit][TOTAL] != UNKNOWN and table[suit][TOTAL] <= self.sheets[player].owned(suit):
-                    self.sheets[player].exclude_suit(suit)
+                if table[suit][TOTAL] != UNKNOWN:
+                    if table[suit][TOTAL] <= len(self.sheets[player].owned(suit)):
+                        self.sheets[player].exclude_when_void(suit)
+                    elif table[suit][TOTAL] == len(self.sheets[player].owned(suit)) + len(self.sheets[player].voids(suit)):
+                        self.sheets[player].own_when_void(suit)
+
+

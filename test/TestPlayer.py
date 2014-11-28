@@ -81,7 +81,6 @@ class TestAI(unittest.TestCase):
         self.erlend = HumanPlayer('erlend')
 
         self.state = GameState()
-        self.state.extra_card = (5, 'L')
         self.state.players = [self.thor, self.sigrid, self.erlend]
 
     def test_ai_player_setup_ai(self):
@@ -89,6 +88,7 @@ class TestAI(unittest.TestCase):
         self.sigrid._hand = [(7, 'L'), (4, 'H')]
         self.erlend._hand = [(9, 'H'), (9, '$')]
 
+        self.state.extra_card = (5, 'L')
         self.thor.setup_ai(self.state)
 
         expected_sheet = sheet_table(excluded=[(1, 'L'), (8, '$'), (5, 'L')])
@@ -97,8 +97,16 @@ class TestAI(unittest.TestCase):
         self.assertEqual(expected_sheet, self.thor.sheets[self.sigrid].table)
         self.assertEqual(expected_sheet, self.thor.sheets[self.erlend].table)
 
+    def test_ai_player_setup_ai_when_there_is_no_extra_card(self):
+        self.state.extra_card = None
+
+        try:
+            self.thor.setup_ai(self.state)
+        except TypeError:
+            self.fail("When there is no extra card, setup_ai() should not raise an exception")
+
     def test_review_last_interrogate_marks_cards_as_excluded_when_result_is_zero(self):
-        self.state.history.append({'turn':      1,
+        self.state.history.append({'turn': 1,
                                    'player': self.thor,
                                    'action': 'interrogate',
                                    'opponent': self.sigrid,
@@ -108,7 +116,7 @@ class TestAI(unittest.TestCase):
         self.thor.setup_ai(self.state)
         self.thor.review_last_interrogate(self.state)
 
-        self.assertEqual(sheet_table(excluded=[(5, 'L'), (2, 'H'), (3, 'H'), (4, 'H'), (5, 'H'), (6, 'H')]),
+        self.assertEqual(sheet_table(excluded=[(2, 'H'), (3, 'H'), (4, 'H'), (5, 'H'), (6, 'H')]),
                          self.thor.sheets[self.sigrid].table)
 
     def test_review_last_interrogate_does_nothing_if_opponent_is_self(self):
@@ -138,11 +146,11 @@ class TestAI(unittest.TestCase):
         self.thor.setup_ai(self.state)
         self.thor.review_last_interrogate(self.state)
 
-        self.assertEqual(sheet_table(excluded=[(5, 'L'), (5, 'H')], owned=[(2, 'H'), (3, 'H'), (4, 'H'), (6, 'H')]),
+        self.assertEqual(sheet_table(excluded=[(5, 'H')], owned=[(2, 'H'), (3, 'H'), (4, 'H'), (6, 'H')]),
                          self.thor.sheets[self.sigrid].table)
-        self.assertEqual(sheet_table(excluded=[(5, 'L'), (5, 'H'), (2, 'H'), (3, 'H'), (4, 'H'), (6, 'H')]),
+        self.assertEqual(sheet_table(excluded=[(5, 'H'), (2, 'H'), (3, 'H'), (4, 'H'), (6, 'H')]),
                          self.thor.sheets[self.erlend].table)
-        self.assertEqual(sheet_table(excluded=[(5, 'L'), (5, 'H'), (2, 'H'), (3, 'H'), (4, 'H'), (6, 'H')]),
+        self.assertEqual(sheet_table(excluded=[(5, 'H'), (2, 'H'), (3, 'H'), (4, 'H'), (6, 'H')]),
                          self.thor.sheets[EVIDENCE_CARDS].table)
 
     def test_review_last_interrogate_takes_secret_into_account_if_current_player_was_the_asker(self):
@@ -156,7 +164,7 @@ class TestAI(unittest.TestCase):
         self.thor.setup_ai(self.state)
         self.thor.review_last_interrogate(self.state)
 
-        self.assertEqual(sheet_table(excluded=[(5, 'L'), (9, '$'), (1, '$'), (2, '$')]),
+        self.assertEqual(sheet_table(excluded=[(9, '$'), (1, '$'), (2, '$')]),
                          self.thor.sheets[self.sigrid].table)
 
         self.state.history.append({'turn': 2,
@@ -168,23 +176,55 @@ class TestAI(unittest.TestCase):
 
         self.thor.review_last_interrogate(self.state)
 
-        self.assertEqual(sheet_table(excluded=[(5, 'L'), (9, '$'), (1, '$'), (2, '$')]),
+        self.assertEqual(sheet_table(excluded=[(9, '$'), (1, '$'), (2, '$')]),
                          self.thor.sheets[self.sigrid].table)
 
-    def test_review_totals_suit_total_equal_owned_slots(self):
+    def test_review_totals_suit_total_equals_owned_slots(self):
         self.thor.setup_ai(self.state)
 
-        self.thor.sheets[self.sigrid].own_cards([(3, 'L'), (8, 'L')])
-        self.thor.sheets[self.sigrid].set_suit_total('L', 2)
+        self.thor.sheets[self.sigrid].own_cards([(3, '$'), (8, '$')])
+        self.thor.sheets[self.sigrid].set_suit_total('$', 2)
 
         self.thor.review_totals()
 
-        self.assertEqual(sheet_table(excluded=[(1, 'L'), (2, 'L'), (4, 'L'), (5, 'L'), (6, 'L'), (7, 'L'), (9, 'L')],
-                                     owned=[(3, 'L'), (8, 'L')], totals={'L': 2}),
+        self.assertEqual(sheet_table(excluded=[(1, '$'), (2, '$'), (4, '$'), (5, '$'), (6, '$'), (7, '$'), (9, '$')],
+                                     owned=[(3, '$'), (8, '$')], totals={'$': 2}),
                          self.thor.sheets[self.sigrid].table)
 
+    def test_review_totals_suit_total_equals_zero(self):
+        self.thor.setup_ai(self.state)
 
+        self.thor.sheets[self.sigrid].set_suit_total('L', 0)
 
+        self.thor.review_totals()
+
+        self.assertEqual(sheet_table(excluded=Range((1, 'L'), (9, 'L')).cards(), totals={'L': 0}),
+                         self.thor.sheets[self.sigrid].table)
+
+    def test_review_totals_suit_total_equals_number_of_owned_plus_unknown_slots(self):
+        self.thor.setup_ai(self.state)
+
+        self.thor.sheets[self.sigrid].own_cards([(3, 'L')])
+        self.thor.sheets[self.sigrid].exclude_cards([(1, 'L'), (2, 'L'), (5, 'L'), (6, 'L'), (8, 'L'), (9, 'L')])
+        self.thor.sheets[self.sigrid].set_suit_total('L', 3)
+
+        self.thor.review_totals()
+
+        self.assertEqual(sheet_table(excluded=[(1, 'L'), (2, 'L'), (5, 'L'), (6, 'L'), (8, 'L'), (9, 'L')],
+                                     owned=[(3, 'L'), (4, 'L'), (7, 'L')], totals={'L': 3}),
+                         self.thor.sheets[self.sigrid].table)
+
+    def test_review_totals_does_nothing_with_suit_total_when_its_larger_than_owned_slots(self):
+        self.thor.setup_ai(self.state)
+
+        self.thor.sheets[self.sigrid].own_cards([(3, 'L')])
+        self.thor.sheets[self.sigrid].exclude_cards([(1, 'L'), (2, 'L')])
+        self.thor.sheets[self.sigrid].set_suit_total('L', 5)
+
+        self.thor.review_totals()
+
+        self.assertEqual(sheet_table(excluded=[(1, 'L'), (2, 'L')], owned=[(3, 'L')], totals={'L': 5}),
+                         self.thor.sheets[self.sigrid].table)
 
 
 
