@@ -1,5 +1,5 @@
 from random import choice
-from Deck import hand_sorter, SUITS, Range, format_card
+from Deck import hand_sorter, SUITS, Range, format_card, RANKS
 from Interactive import ask_for, help_command, quit_command, print_summary, interrogate_command, print_history, \
     secret_command, accuse_command
 from Sheet import EVIDENCE_CARDS, Sheet, VOID, TOTAL, UNKNOWN
@@ -167,9 +167,17 @@ class AIPlayer(Player):
             table = self.sheets[player].table
             for suit in SUITS:
                 if table[suit][TOTAL] != UNKNOWN:
-                    if table[suit][TOTAL] <= len(self.sheets[player].owned(suit)):
-                        self.sheets[player].exclude_when_void(suit)
-                    elif table[suit][TOTAL] == len(self.sheets[player].owned(suit)) + len(self.sheets[player].voids(suit)):
+                    if table[suit][TOTAL] == len(self.sheets[player].owned(suit=suit)):
+                        self.sheets[player].exclude_when_void_for_suit(suit)
+                    elif table[suit][TOTAL] == (len(self.sheets[player].owned(suit=suit)) +
+                                                len(self.sheets[player].voids(suit=suit))):
                         self.sheets[player].own_when_void(suit)
+
+            for rank in RANKS:
+                if table[TOTAL][rank] != UNKNOWN:
+                    if table[TOTAL][rank] == len(self.sheets[player].owned(rank=rank)):
+                        self.sheets[player].exclude_when_void_for_rank(rank)
+                    # elif table[suit][TOTAL] == len(self.sheets[player].owned(suit)) + len(self.sheets[player].voids(suit)):
+                    #     self.sheets[player].own_when_void(suit)
 
 

@@ -226,6 +226,17 @@ class TestAI(unittest.TestCase):
         self.assertEqual(sheet_table(excluded=[(1, 'L'), (2, 'L')], owned=[(3, 'L')], totals={'L': 5}),
                          self.thor.sheets[self.sigrid].table)
 
+    def test_review_totals_rank_total_equals_owned_slots(self):
+        self.thor.setup_ai(self.state)
+
+        self.thor.sheets[self.sigrid].own_cards([(3, 'H'), (3, '$')])
+        self.thor.sheets[self.sigrid].set_rank_total(3, 2)
+
+        self.thor.review_totals()
+
+        self.assertEqual(sheet_table(excluded=[(3, 'L')], owned=[(3, 'H'), (3, '$')], totals={3: 2}),
+                         self.thor.sheets[self.sigrid].table)
+
 
 
 if __name__ == '__main__':

@@ -42,6 +42,13 @@ class TestSheet(unittest.TestCase):
 
         self.assertEqual(sheet_table(owned=[(5, 'L')], totals={'L': 3}), sheet.table)
 
+    def test_set_rank_total(self):
+        sheet = Sheet('test')
+        sheet.own_cards([(5, 'L')])
+        sheet.set_rank_total(5, 2)
+
+        self.assertEqual(sheet_table(owned=[(5, 'L')], totals={5: 2}), sheet.table)
+
     def test_voids(self):
         sheet = Sheet('test')
         sheet.exclude_cards(Range((2, 'L'), (8, '$')).cards())
@@ -66,15 +73,31 @@ class TestSheet(unittest.TestCase):
 
         self.assertItemsEqual([(2, 'L'), (6, 'L')], sheet.owned('L'))
 
-    def test_exclude_when_void_marks_unknown_cards_as_excluded(self):
+    def test_owned_for_a_rank(self):
+        sheet = Sheet('test')
+        sheet.own_cards([(3, 'L'), (6, 'L'), (3, 'H')])
+
+        self.assertItemsEqual([(3, 'L'), (3, 'H')], sheet.owned(rank=3))
+
+    def test_exclude_when_void_for_suit_marks_unknown_cards_as_excluded(self):
         sheet = Sheet('test')
         sheet.own_cards([(2, 'L'), (6, 'L'), (9, 'L')])
 
-        sheet.exclude_when_void('L')
+        sheet.exclude_when_void_for_suit('L')
 
         self.assertEqual(sheet_table(excluded=[(1, 'L'), (3, 'L'), (4, 'L'), (5, 'L'), (7, 'L'), (8, 'L')],
                                      owned=[(2, 'L'), (6, 'L'), (9, 'L')]),
                          sheet.table)
+
+    def test_exclude_when_void_for_rank_marks_unknown_cards_as_excluded(self):
+        sheet = Sheet('test')
+        sheet.own_cards([(2, 'L'), (6, 'L'), (9, 'L')])
+
+        sheet.exclude_when_void_for_rank(6)
+
+        self.assertEqual(sheet_table(excluded=[(6, 'H'), (6, '$')], owned=[(2, 'L'), (6, 'L'), (9, 'L')]),
+                         sheet.table)
+
 
     def test_own_when_void_marks_unknown_cards_as_owned(self):
         sheet = Sheet('test')
