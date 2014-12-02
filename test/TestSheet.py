@@ -61,6 +61,12 @@ class TestSheet(unittest.TestCase):
 
         self.assertItemsEqual([(1, 'H'), (9, 'H')], sheet.voids('H'))
 
+    def test_voids_for_a_rank(self):
+        sheet = Sheet('test')
+        sheet.exclude_cards((5, 'H'))
+
+        self.assertItemsEqual([(5, 'L'), (5, '$')], sheet.voids(rank=5))
+
     def test_owned(self):
         sheet = Sheet('test')
         sheet.own_cards([(2, 'L'), (6, 'L'), (3, 'H')])
@@ -79,35 +85,45 @@ class TestSheet(unittest.TestCase):
 
         self.assertItemsEqual([(3, 'L'), (3, 'H')], sheet.owned(rank=3))
 
-    def test_exclude_when_void_for_suit_marks_unknown_cards_as_excluded(self):
+    def test_exclude_when_unknown_for_suit_marks_unknown_cards_as_excluded(self):
         sheet = Sheet('test')
         sheet.own_cards([(2, 'L'), (6, 'L'), (9, 'L')])
 
-        sheet.exclude_when_void_for_suit('L')
+        sheet.exclude_when_unknown_for_suit('L')
 
         self.assertEqual(sheet_table(excluded=[(1, 'L'), (3, 'L'), (4, 'L'), (5, 'L'), (7, 'L'), (8, 'L')],
                                      owned=[(2, 'L'), (6, 'L'), (9, 'L')]),
                          sheet.table)
 
-    def test_exclude_when_void_for_rank_marks_unknown_cards_as_excluded(self):
+    def test_exclude_when_unknown_for_rank_marks_unknown_cards_as_excluded(self):
         sheet = Sheet('test')
         sheet.own_cards([(2, 'L'), (6, 'L'), (9, 'L')])
 
-        sheet.exclude_when_void_for_rank(6)
+        sheet.exclude_when_unknown_for_rank(6)
 
         self.assertEqual(sheet_table(excluded=[(6, 'H'), (6, '$')], owned=[(2, 'L'), (6, 'L'), (9, 'L')]),
                          sheet.table)
 
 
-    def test_own_when_void_marks_unknown_cards_as_owned(self):
+    def test_own_when_unknown_for_suit_marks_unknown_cards_as_owned(self):
         sheet = Sheet('test')
         sheet.exclude_cards([(2, 'L'), (6, 'L'), (9, 'L')])
 
-        sheet.own_when_void('L')
+        sheet.own_when_unknown_for_suit('L')
 
         self.assertEqual(sheet_table(excluded=[(2, 'L'), (6, 'L'), (9, 'L')],
                                      owned=[(1, 'L'), (3, 'L'), (4, 'L'), (5, 'L'), (7, 'L'), (8, 'L')]),
                          sheet.table)
+
+    def test_own_when_unknown_for_rank_marks_unknown_cards_as_owned(self):
+        sheet = Sheet('test')
+        sheet.exclude_cards([(2, 'L'), (6, 'L')])
+
+        sheet.own_when_unknown_for_rank(6)
+
+        self.assertEqual(sheet_table(excluded=[(2, 'L'), (6, 'L')], owned=[(6, 'H'), (6, '$')]),
+                         sheet.table)
+
 
 
 if __name__ == '__main__':

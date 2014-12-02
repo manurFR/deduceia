@@ -168,16 +168,15 @@ class AIPlayer(Player):
             for suit in SUITS:
                 if table[suit][TOTAL] != UNKNOWN:
                     if table[suit][TOTAL] == len(self.sheets[player].owned(suit=suit)):
-                        self.sheets[player].exclude_when_void_for_suit(suit)
+                        self.sheets[player].exclude_when_unknown_for_suit(suit)
                     elif table[suit][TOTAL] == (len(self.sheets[player].owned(suit=suit)) +
                                                 len(self.sheets[player].voids(suit=suit))):
-                        self.sheets[player].own_when_void(suit)
+                        self.sheets[player].own_when_unknown_for_suit(suit)
 
             for rank in RANKS:
                 if table[TOTAL][rank] != UNKNOWN:
                     if table[TOTAL][rank] == len(self.sheets[player].owned(rank=rank)):
-                        self.sheets[player].exclude_when_void_for_rank(rank)
-                    # elif table[suit][TOTAL] == len(self.sheets[player].owned(suit)) + len(self.sheets[player].voids(suit)):
-                    #     self.sheets[player].own_when_void(suit)
-
-
+                        self.sheets[player].exclude_when_unknown_for_rank(rank)
+                    elif table[TOTAL][rank] == (len(self.sheets[player].owned(rank=rank)) +
+                                                len(self.sheets[player].voids(rank=rank))):
+                        self.sheets[player].own_when_unknown_for_rank(rank)

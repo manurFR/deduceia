@@ -237,6 +237,39 @@ class TestAI(unittest.TestCase):
         self.assertEqual(sheet_table(excluded=[(3, 'L')], owned=[(3, 'H'), (3, '$')], totals={3: 2}),
                          self.thor.sheets[self.sigrid].table)
 
+    def test_review_totals_rank_total_equals_zero(self):
+        self.thor.setup_ai(self.state)
+
+        self.thor.sheets[self.sigrid].set_rank_total(5, 0)
+
+        self.thor.review_totals()
+
+        self.assertEqual(sheet_table(excluded=[(5, 'L'), (5, 'H'), (5, '$')], totals={5: 0}),
+                         self.thor.sheets[self.sigrid].table)
+
+    def test_review_totals_rank_total_equals_number_of_owned_plus_unknown_slots(self):
+        self.thor.setup_ai(self.state)
+
+        self.thor.sheets[self.sigrid].own_cards([(5, 'L')])
+        self.thor.sheets[self.sigrid].exclude_cards([(5, '$')])
+        self.thor.sheets[self.sigrid].set_rank_total(5, 2)
+
+        self.thor.review_totals()
+
+        self.assertEqual(sheet_table(excluded=[(5, '$')], owned=[(5, 'L'), (5, 'H')], totals={5: 2}),
+                         self.thor.sheets[self.sigrid].table)
+
+    def test_review_totals_does_nothing_with_rank_total_when_its_larger_than_owned_slots(self):
+        self.thor.setup_ai(self.state)
+
+        self.thor.sheets[self.sigrid].own_cards([(3, 'L')])
+        self.thor.sheets[self.sigrid].exclude_cards([(3, 'H')])
+        self.thor.sheets[self.sigrid].set_rank_total(3, 3)
+
+        self.thor.review_totals()
+
+        self.assertEqual(sheet_table(excluded=[(3, 'H')], owned=[(3, 'L')], totals={3: 3}),
+                         self.thor.sheets[self.sigrid].table)
 
 
 if __name__ == '__main__':
