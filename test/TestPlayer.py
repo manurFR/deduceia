@@ -105,7 +105,7 @@ class TestAI(unittest.TestCase):
         except TypeError:
             self.fail("When there is no extra card, setup_ai() should not raise an exception")
 
-    def test_review_last_interrogate_marks_cards_as_excluded_when_result_is_zero(self):
+    def test_review_last_turn_marks_cards_as_excluded_when_result_is_zero(self):
         self.state.history.append({'turn': 1,
                                    'player': self.thor,
                                    'action': 'interrogate',
@@ -114,12 +114,12 @@ class TestAI(unittest.TestCase):
                                    'result': 0})
 
         self.thor.setup_ai(self.state)
-        self.thor.review_last_interrogate(self.state)
+        self.thor.review_turn(self.state, -1)
 
         self.assertEqual(sheet_table(excluded=[(2, 'H'), (3, 'H'), (4, 'H'), (5, 'H'), (6, 'H')]),
                          self.thor.sheets[self.sigrid].table)
 
-    def test_review_last_interrogate_does_nothing_if_opponent_is_self(self):
+    def test_review_last_turn_does_nothing_if_opponent_is_self(self):
         self.state.history.append({'turn': 1,
                                    'player': self.sigrid,
                                    'action': 'interrogate',
@@ -129,11 +129,11 @@ class TestAI(unittest.TestCase):
 
         self.thor.setup_ai(self.state)
         try:
-            self.thor.review_last_interrogate(self.state)
+            self.thor.review_turn(self.state, -1)
         except KeyError:
             self.fail("review_last_interrogate() has tried to modify the player's own sheet")
 
-    def test_review_last_interrogate_marks_cards_as_owned_when_results_equals_all_unknown_slots(self):
+    def test_review_last_turn_marks_cards_as_owned_when_results_equals_all_unknown_slots(self):
         self.thor._hand = [(5, 'H')]
 
         self.state.history.append({'turn': 1,
@@ -144,7 +144,7 @@ class TestAI(unittest.TestCase):
                                    'result': 4})
 
         self.thor.setup_ai(self.state)
-        self.thor.review_last_interrogate(self.state)
+        self.thor.review_turn(self.state, -1)
 
         self.assertEqual(sheet_table(excluded=[(5, 'H')], owned=[(2, 'H'), (3, 'H'), (4, 'H'), (6, 'H')]),
                          self.thor.sheets[self.sigrid].table)
@@ -153,7 +153,7 @@ class TestAI(unittest.TestCase):
         self.assertEqual(sheet_table(excluded=[(5, 'H'), (2, 'H'), (3, 'H'), (4, 'H'), (6, 'H')]),
                          self.thor.sheets[EVIDENCE_CARDS].table)
 
-    def test_review_last_interrogate_takes_secret_into_account_if_current_player_was_the_asker(self):
+    def test_review_last_turn_takes_secret_into_account_if_current_player_was_the_asker(self):
         self.state.history.append({'turn': 1,
                                    'player': self.thor,
                                    'action': 'secret',
@@ -162,7 +162,7 @@ class TestAI(unittest.TestCase):
                                    'result': 0})
 
         self.thor.setup_ai(self.state)
-        self.thor.review_last_interrogate(self.state)
+        self.thor.review_turn(self.state, -1)
 
         self.assertEqual(sheet_table(excluded=[(9, '$'), (1, '$'), (2, '$')]),
                          self.thor.sheets[self.sigrid].table)
@@ -174,10 +174,28 @@ class TestAI(unittest.TestCase):
                                    'range': Range((3, 'L'), (3, '$')),
                                    'result': 0})
 
-        self.thor.review_last_interrogate(self.state)
+        self.thor.review_turn(self.state, -1)
 
         self.assertEqual(sheet_table(excluded=[(9, '$'), (1, '$'), (2, '$')]),
                          self.thor.sheets[self.sigrid].table)
+
+    def test_review_history_full(self):
+        self.state.history.append({'turn': 1, 'player': self.thor, 'action': 'interrogate', 'opponent': self.sigrid,
+                                   'range': Range((9, '$'), (2, '$')), 'result': 0})
+        self.state.history.append({'turn': 2, 'player': self.sigrid, 'action': 'interrogate', 'opponent': self.erlend,
+                                   'range': Range((2, '$'), (2, 'L')), 'result': 0})
+        self.state.history.append({'turn': 3, 'player': self.erlend, 'action': 'interrogate', 'opponent': self.sigrid,
+                                   'range': Range((3, 'L'), (4, 'H')), 'result': 4})
+
+        self.thor._hand = [(3, '$'), (4, 'L')]
+
+        self.thor.setup_ai(self.state)
+        self.thor.review_history(self.state)
+
+        self.assertEqual(sheet_table(excluded=[(9, '$'), (1, '$'), (2, '$'), (3, '$'), (4, 'L')],
+                                     owned=[(3, 'L'), (3, 'H'), (4, '$'), (4, 'H')]),
+                         self.thor.sheets[self.sigrid].table)
+        self.assertEqual(sheet_table(excluded=Range((2, 'L'), (4, '$')).cards()), self.thor.sheets[self.erlend].table)
 
     def test_review_totals_suit_total_equals_owned_slots(self):
         self.thor.setup_ai(self.state)

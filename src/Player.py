@@ -145,8 +145,8 @@ class AIPlayer(Player):
                 sheet.exclude_cards(state.extra_card)
             sheet.exclude_cards(self.hand)
 
-    def review_last_interrogate(self, state):
-        fact = state.history[-1]
+    def review_turn(self, state, turn_index):
+        fact = state.history[turn_index]
         if fact['opponent'] == self:
             return  # we don't need to keep a sheet about ourselves
         if fact['action'] == 'secret' and fact['player'] != self:
@@ -161,6 +161,10 @@ class AIPlayer(Player):
             for player in state.players_except(fact['opponent'], self):
                 self.sheets[player].exclude_cards(unknown_slots)
             self.sheets[EVIDENCE_CARDS].exclude_cards(unknown_slots)
+
+    def review_history(self, state):
+        for i in range(len(state.history)):
+            self.review_turn(state, i)
 
     def review_totals(self):
         for player in self.sheets.keys():
