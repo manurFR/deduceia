@@ -175,6 +175,9 @@ class AIPlayer(Player):
             if nb_unknown == 0:
                 self.sheets[fact['opponent']].set_suit_total(suit, fact['result'] + nb_owned)
 
+        if len(fact['range'].ranks) == 1:  # deduce the rank's nb of cards
+            self.sheets[fact['opponent']].set_rank_total(fact['range'].ranks[0], fact['result'])
+
     def review_history(self, state):
         for i in range(len(state.history)):
             self.review_turn(state, i)

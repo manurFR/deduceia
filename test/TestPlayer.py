@@ -196,6 +196,19 @@ class TestAI(unittest.TestCase):
         self.assertEqual(sheet_table(excluded=[(1, '$'), (4, '$')], owned=[(9, '$')], totals={'$': 3}),
                          self.thor.sheets[self.sigrid].table)
 
+    def test_review_turn_gives_rank_total(self):
+        self.state.history.append({'turn': 1,
+                                   'player': self.thor,
+                                   'action': 'interrogate',
+                                   'opponent': self.sigrid,
+                                   'range': Range((3, 'L'), (3, 'H')),
+                                   'result': 2})
+
+        self.thor.setup_ai(self.state)
+        self.thor.review_turn(self.state, -1)
+
+        self.assertEqual(sheet_table(totals={3: 2}), self.thor.sheets[self.sigrid].table)
+
 
     def test_review_history_full(self):
         self.state.history.append({'turn': 1, 'player': self.thor, 'action': 'interrogate', 'opponent': self.sigrid,
@@ -213,7 +226,8 @@ class TestAI(unittest.TestCase):
         self.assertEqual(sheet_table(excluded=[(9, '$'), (1, '$'), (2, '$'), (3, '$'), (4, 'L')],
                                      owned=[(3, 'L'), (3, 'H'), (4, '$'), (4, 'H')]),
                          self.thor.sheets[self.sigrid].table)
-        self.assertEqual(sheet_table(excluded=Range((2, 'L'), (4, '$')).cards()), self.thor.sheets[self.erlend].table)
+        self.assertEqual(sheet_table(excluded=Range((2, 'L'), (4, '$')).cards(), totals={2: 0}),
+                         self.thor.sheets[self.erlend].table)
 
     def test_review_totals_suit_total_equals_owned_slots(self):
         self.thor.setup_ai(self.state)
