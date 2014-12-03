@@ -2,7 +2,7 @@ from random import choice
 from Deck import hand_sorter, SUITS, Range, format_card, RANKS
 from Interactive import ask_for, help_command, quit_command, print_summary, interrogate_command, print_history, \
     secret_command, accuse_command
-from Sheet import EVIDENCE_CARDS, Sheet, VOID, TOTAL, UNKNOWN
+from Sheet import EVIDENCE_CARDS, Sheet, VOID, TOTAL, UNKNOWN, MISS, OWND
 
 COMMANDS = {'h': help_command,
             'r': print_summary,
@@ -161,6 +161,19 @@ class AIPlayer(Player):
             for player in state.players_except(fact['opponent'], self):
                 self.sheets[player].exclude_cards(unknown_slots)
             self.sheets[EVIDENCE_CARDS].exclude_cards(unknown_slots)
+
+        if len(fact['range'].suits) == 1:  # with ranges in only one suit, see if we can deduce the suit's nb of cards
+            suit = fact['range'].suits[0]
+            nb_unknown = 0
+            nb_owned = 0
+            for rank, status in self.sheets[fact['opponent']].table[suit].iteritems():
+                if rank != TOTAL and (rank, suit) not in fact['range'].cards():
+                    if status == VOID:
+                        nb_unknown += 1
+                    elif status == OWND:
+                        nb_owned += 1
+            if nb_unknown == 0:
+                self.sheets[fact['opponent']].set_suit_total(suit, fact['result'] + nb_owned)
 
     def review_history(self, state):
         for i in range(len(state.history)):

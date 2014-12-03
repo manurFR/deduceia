@@ -179,6 +179,24 @@ class TestAI(unittest.TestCase):
         self.assertEqual(sheet_table(excluded=[(9, '$'), (1, '$'), (2, '$')]),
                          self.thor.sheets[self.sigrid].table)
 
+    def test_review_turn_gives_suit_total(self):
+        self.state.history.append({'turn': 1,
+                                   'player': self.thor,
+                                   'action': 'interrogate',
+                                   'opponent': self.sigrid,
+                                   'range': Range((2, '$'), (8, '$')),
+                                   'result': 2})
+
+        self.thor.setup_ai(self.state)
+        self.thor.sheets[self.sigrid].exclude_cards([(1, '$'), (4, '$')])
+        self.thor.sheets[self.sigrid].own_cards([(9, '$')])
+
+        self.thor.review_turn(self.state, -1)
+
+        self.assertEqual(sheet_table(excluded=[(1, '$'), (4, '$')], owned=[(9, '$')], totals={'$': 3}),
+                         self.thor.sheets[self.sigrid].table)
+
+
     def test_review_history_full(self):
         self.state.history.append({'turn': 1, 'player': self.thor, 'action': 'interrogate', 'opponent': self.sigrid,
                                    'range': Range((9, '$'), (2, '$')), 'result': 0})
